@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.arcana.rahansazeh.DataEntryActivity">
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:id="@+id/txtTimeHour"
+                android:text="12"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text=":"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:id="@+id/txtTimeMinute"
+                android:text="46"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text=":"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:id="@+id/txtTimeSecond"
+                android:text="33"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+            <ToggleButton
+                android:id="@+id/btnTaxiLoad"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textOn="سوار شده"
+                android:textOff="سوار شده"
+                android:background="@drawable/toggle_selector"
+                android:textColor="@drawable/toggle_fg_selector"
+                android:checked="true"
+                />
+
+            <ToggleButton
+                android:id="@+id/btnTaxiUnLoad"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textOn="پیاده شده"
+                android:textOff="پیاده شده"
+                android:textColor="@drawable/toggle_fg_selector"
+                android:background="@drawable/toggle_selector"
+                />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/pelak"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="10dp">
+            <LinearLayout
+                android:layout_width="60dp"
+                android:orientation="vertical"
+                android:layout_height="60dp"
+                android:background="@color/colorAccent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:gravity="center_vertical"
+                android:padding="5dp"
+                android:id="@+id/layoutIRContainer">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="I.R."/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="IRAN"/>
+            </LinearLayout>
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="2"
+                android:maxEms="2"
+                android:id="@+id/txtLicensePlateLeft"
+                android:layout_toRightOf="@id/layoutIRContainer"
+                android:layout_toEndOf="@id/layoutIRContainer"
+                >
+                <requestFocus/>
+            </EditText>
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinnerLicensePlate"
+                android:layout_toRightOf="@id/txtLicensePlateLeft"
+                android:layout_toEndOf="@id/txtLicensePlateLeft"
+                android:layout_alignBottom="@id/txtLicensePlateLeft"
+                />
+
+            <EditText
+                android:id="@+id/txtLicensePlateRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/spinnerLicensePlate"
+                android:layout_toEndOf="@id/spinnerLicensePlate"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:ems="3"
+                android:inputType="numberDecimal"
+                android:maxEms="3" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <Spinner
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinTaxiType">
+            </Spinner>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="نوع خودرو"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:id="@+id/txtDepartureTime"
+                android:text="@string/choose_time"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:id="@+id/txtArrivalTime"
+                android:text="@string/choose_time"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnSelectDepartureTime"
+                android:onClick="onBtnSelectDepartureTimeClicked"
+                android:text="زمان اعزام"
+                style="@style/Widget.AppCompat.Button.Colored"/>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="زمان رسیدن"
+                android:onClick="onBtnSelectArrivalTimeClicked"
+                style="@style/Widget.AppCompat.Button.Colored"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+            <EditText
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="مسافر پیاده‌شده"
+                android:id="@+id/unloadPassengersCount"
+                android:inputType="numberDecimal" />
+
+            <EditText
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="مسافر سوارشده"
+                android:id="@+id/loadPassengersCount"
+                android:inputType="numberDecimal" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="ثبت"
+        android:id="@+id/btnSave"
+        android:onClick="onSaveClicked"
+        style="@style/Widget.AppCompat.Button.Colored"/>
+</android.support.constraint.ConstraintLayout>
