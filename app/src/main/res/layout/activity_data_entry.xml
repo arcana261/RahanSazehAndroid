@@ -14,13 +14,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="3"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:id="@+id/txtTimeHour"
-                android:text="12"/>
+                android:id="@+id/txtTimeSecond"
+                android:text="33"/>
 
             <TextView
                 android:layout_width="0dp"
@@ -49,14 +50,26 @@
                 android:layout_weight="3"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:id="@+id/txtTimeSecond"
-                android:text="33"/>
+                android:id="@+id/txtTimeHour"
+                android:text="12"/>
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp">
+            <ToggleButton
+                android:id="@+id/btnTaxiUnLoad"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textOn="پیاده شده"
+                android:textOff="پیاده شده"
+                android:textColor="@drawable/toggle_fg_selector"
+                android:background="@drawable/toggle_selector"
+                />
+
             <ToggleButton
                 android:id="@+id/btnTaxiLoad"
                 android:layout_width="0dp"
@@ -69,18 +82,6 @@
                 android:textColor="@drawable/toggle_fg_selector"
                 android:checked="true"
                 />
-
-            <ToggleButton
-                android:id="@+id/btnTaxiUnLoad"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textOn="پیاده شده"
-                android:textOff="پیاده شده"
-                android:textColor="@drawable/toggle_fg_selector"
-                android:background="@drawable/toggle_selector"
-                />
         </LinearLayout>
 
         <RelativeLayout
@@ -90,13 +91,50 @@
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/txtLicensePlateRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:ems="3"
+                android:inputType="numberDecimal"
+                android:maxEms="3" />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinnerLicensePlate"
+                android:layout_toLeftOf="@id/txtLicensePlateLeft"
+                android:layout_toStartOf="@id/txtLicensePlateLeft"
+                android:layout_toRightOf="@id/txtLicensePlateRight"
+                android:layout_toEndOf="@id/txtLicensePlateRight"
+                android:layout_alignBottom="@id/txtLicensePlateLeft"
+                style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="2"
+                android:maxEms="2"
+                android:id="@+id/txtLicensePlateLeft"
+                android:layout_toLeftOf="@id/layoutIRContainer"
+                android:layout_toStartOf="@id/layoutIRContainer"
+                >
+                <requestFocus/>
+            </EditText>
+
             <LinearLayout
                 android:layout_width="60dp"
                 android:orientation="vertical"
                 android:layout_height="60dp"
                 android:background="@color/colorAccent"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="center_vertical"
                 android:padding="5dp"
                 android:id="@+id/layoutIRContainer">
@@ -109,41 +147,6 @@
                     android:layout_height="wrap_content"
                     android:text="IRAN"/>
             </LinearLayout>
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="2"
-                android:maxEms="2"
-                android:id="@+id/txtLicensePlateLeft"
-                android:layout_toRightOf="@id/layoutIRContainer"
-                android:layout_toEndOf="@id/layoutIRContainer"
-                >
-                <requestFocus/>
-            </EditText>
-
-            <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinnerLicensePlate"
-                android:layout_toRightOf="@id/txtLicensePlateLeft"
-                android:layout_toEndOf="@id/txtLicensePlateLeft"
-                android:layout_alignBottom="@id/txtLicensePlateLeft"
-                />
-
-            <EditText
-                android:id="@+id/txtLicensePlateRight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/spinnerLicensePlate"
-                android:layout_toEndOf="@id/spinnerLicensePlate"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:ems="3"
-                android:inputType="numberDecimal"
-                android:maxEms="3" />
-
         </RelativeLayout>
 
         <LinearLayout
@@ -152,18 +155,19 @@
             android:orientation="horizontal"
             android:layout_marginTop="10dp">
 
-            <Spinner
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinTaxiType">
-            </Spinner>
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="نوع خودرو"/>
+
+            <Spinner
+                android:layout_width="0dp"
+                android:layout_weight="3"
+                android:layout_height="wrap_content"
+                android:id="@+id/spinTaxiType"
+                style="@style/Base.Widget.AppCompat.Spinner.Underlined">
+            </Spinner>
         </LinearLayout>
 
         <LinearLayout
@@ -210,6 +214,7 @@
                 android:layout_height="wrap_content"
                 android:text="زمان رسیدن"
                 android:onClick="onBtnSelectArrivalTimeClicked"
+                android:enabled="false"
                 style="@style/Widget.AppCompat.Button.Colored"/>
 
         </LinearLayout>
@@ -225,7 +230,8 @@
                 android:layout_height="wrap_content"
                 android:hint="مسافر پیاده‌شده"
                 android:id="@+id/unloadPassengersCount"
-                android:inputType="numberDecimal" />
+                android:inputType="numberDecimal"
+                android:enabled="false"/>
 
             <EditText
                 android:layout_width="0dp"

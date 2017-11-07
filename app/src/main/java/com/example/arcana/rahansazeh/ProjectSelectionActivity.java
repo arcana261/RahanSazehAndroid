@@ -16,7 +16,7 @@ import ir.hamsaa.persiandatepicker.Listener;
 import ir.hamsaa.persiandatepicker.PersianDatePickerDialog;
 import ir.hamsaa.persiandatepicker.util.PersianCalendar;
 
-public class ProjectSelectionActivity extends AppCompatActivity {
+public class ProjectSelectionActivity extends BaseActivity {
     private Button btnSelectProject;
     private Button btnSelectDate;
     private Button btnSelectLine;
@@ -33,6 +33,8 @@ public class ProjectSelectionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_selection);
+
+        forceRTLIfSupported();
 
         btnSelectProject = findViewById(R.id.btnSelectProject);
         btnSelectDate = findViewById(R.id.btnSelectDate);
@@ -86,14 +88,14 @@ public class ProjectSelectionActivity extends AppCompatActivity {
     public void onSelectDateClicked(View view) {
         final Context ctx = this;
         PersianDatePickerDialog picker = new PersianDatePickerDialog(this)
-                .setPositiveButtonString("باشه")
-                .setNegativeButton("بیخیال")
+                .setPositiveButtonString("انتخاب")
+                .setNegativeButton("انصراف")
                 .setTodayButton("امروز")
                 .setTodayButtonVisible(true)
                 .setInitDate(new PersianCalendar())
                 .setMaxYear(1398)
                 .setMinYear(1300)
-                .setActionTextColor(Color.GRAY)
+                .setActionTextColor(Color.BLACK)
                 //.setTypeFace(typeface)
                 .setListener(new Listener() {
                     @Override

@@ -1,11 +1,14 @@
 package com.example.arcana.rahansazeh;
 
+import android.app.ActionBar;
 import android.app.DialogFragment;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,11 +16,15 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class DataEntryActivity extends AppCompatActivity {
+public class DataEntryActivity extends BaseActivity {
     private TextView txtTimeHour;
     private TextView txtTimeMinute;
     private TextView txtTimeSecond;
@@ -55,9 +62,37 @@ public class DataEntryActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onSupportNavigateUp(){
+        finish();
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.data_entry, menu);
+        /*
+        for (int i = 0; i < menu.size(); i++) {
+            menu.getItem(i).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
+        */
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_entry);
+
+        forceRTLIfSupported();
+        //ActionBar bar = getActionBar();//.setDisplayHomeAsUpEnabled(true);
+        android.support.v7.app.ActionBar bar2 = getSupportActionBar();
+
+        if (bar2 != null) {
+            bar2.setDisplayHomeAsUpEnabled(true);
+        }
+
         final DataEntryActivity activity = this;
 
         txtTimeHour = findViewById(R.id.txtTimeHour);
@@ -157,6 +192,7 @@ public class DataEntryActivity extends AppCompatActivity {
         List<String> licenseTypeList;
 
         licenseTypeList = new ArrayList<String>();
+        licenseTypeList.add("نوع پلاک را انتخاب کنید");
         licenseTypeList.add("ت");
         licenseTypeList.add("ع");
 
@@ -168,6 +204,7 @@ public class DataEntryActivity extends AppCompatActivity {
         List<String> vehicleTypeList;
 
         vehicleTypeList = new ArrayList<String>();
+        vehicleTypeList.add("نوع خودرو را انتخاب کنید");
         vehicleTypeList.add("ون");
         vehicleTypeList.add("پژو (۴۰۵-روآ-آردی)");
         vehicleTypeList.add("سمند");
@@ -187,30 +224,55 @@ public class DataEntryActivity extends AppCompatActivity {
         unloadPassengersCount.setText("");
         txtArrivalTime.setText(getString(R.string.choose_time));
         txtDepartureTime.setText(getString(R.string.choose_time));
+        spinTaxiType.setSelection(0);
+        spinnerLicensePlate.setSelection(0);
+
         txtLicensePlateLeft.requestFocus();
     }
 
-    public void onTimeSet(String cause, int hour, int minute) {
+    public void onTimeSet(String cause, int hour, int minute, int second) {
         if (cause.equals("departure")) {
-            txtDepartureTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute));
+            txtDepartureTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute) + ":" + fixDateStr(second));
         }
         else if (cause.equals("arrival")) {
-            txtArrivalTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute));
+            txtArrivalTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute) + ":" + fixDateStr(second));
         }
+    }
+
+    private void showTimePickerDialog(final String cause) {
+        final Calendar c = Calendar.getInstance();
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+        int second = c.get(Calendar.SECOND);
+        final DataEntryActivity owner = this;
+
+        TimePickerDialog dlg = TimePickerDialog.newInstance(new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
+                owner.onTimeSet(cause, hourOfDay, minute, second);
+            }
+        }, hour, minute, second, true);
+
+        dlg.enableSeconds(true);
+        dlg.setCancelText("لغو");
+        dlg.setOkText("تأیید");
+        dlg.show(getFragmentManager(), "Datepickerdialog");
     }
 
     public void onBtnSelectDepartureTimeClicked(View view) {
-        TimePickerFragment newFragment = new TimePickerFragment();
-        newFragment.setActivity(this);
-        newFragment.setCause("departure");
-        newFragment.show(getFragmentManager(), "timePicker");
+        showTimePickerDialog("departure");
+//        TimePickerFragment newFragment = new TimePickerFragment();
+//        newFragment.setActivity(this);
+//        newFragment.setCause("departure");
+//        newFragment.show(getFragmentManager(), "timePicker");
     }
 
     public void onBtnSelectArrivalTimeClicked(View view) {
-        TimePickerFragment newFragment = new TimePickerFragment();
-        newFragment.setActivity(this);
-        newFragment.setCause("arrival");
-        newFragment.show(getFragmentManager(), "timePicker");
+        showTimePickerDialog("arrival");
+//        TimePickerFragment newFragment = new TimePickerFragment();
+//        newFragment.setActivity(this);
+//        newFragment.setCause("arrival");
+//        newFragment.show(getFragmentManager(), "timePicker");
     }
 
     public void onSaveClicked(View view) {
