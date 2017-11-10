@@ -12,4 +12,8 @@
     <string name="next">بعدی</string>
     <string name="terminal">مکان</string>
     <string name="choose_time">انتخاب کنید</string>
+    <string name="please_wait">لطفا منتظر بمانید</string>
+    <string name="error">خطا</string>
+    <string name="connection_error">خطا در اتصال به سرور</string>
+    <string name="server_loading">در حال بارگزاری</string>
 </resources>
