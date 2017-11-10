@@ -23,6 +23,7 @@ public class ProjectSelectionActivity extends BaseActivity {
     private Button btnSelectTerminal;
     private Button btnNext;
     private TableRow rowTerminalContainer;
+    private String userName;
 
     private boolean hasProject = false;
     private boolean hasDate = false;
@@ -35,6 +36,7 @@ public class ProjectSelectionActivity extends BaseActivity {
         setContentView(R.layout.activity_project_selection);
 
         forceRTLIfSupported();
+        enableBackButton();
 
         btnSelectProject = findViewById(R.id.btnSelectProject);
         btnSelectDate = findViewById(R.id.btnSelectDate);
@@ -45,6 +47,9 @@ public class ProjectSelectionActivity extends BaseActivity {
 
         btnNext.setVisibility(View.INVISIBLE);
         rowTerminalContainer.setVisibility(View.INVISIBLE);
+
+        Bundle params = getIntent().getExtras();
+        userName = params.getString("userName");
     }
 
     public void recheck() {
@@ -159,6 +164,9 @@ public class ProjectSelectionActivity extends BaseActivity {
 
     public void onNextClicked(View view) {
         Intent intent = new Intent(this, DataEntryActivity.class);
+
+        intent.putExtra("userName", userName);
+
         startActivity(intent);
     }
 }

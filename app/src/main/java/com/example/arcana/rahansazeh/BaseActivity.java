@@ -11,6 +11,12 @@ import android.view.View;
  */
 
 public class BaseActivity extends AppCompatActivity {
+    private boolean backButtonEnabled;
+
+    public BaseActivity() {
+        this.backButtonEnabled = false;
+    }
+
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     protected void forceRTLIfSupported()
     {
@@ -25,6 +31,26 @@ public class BaseActivity extends AppCompatActivity {
         if (bar != null) {
             bar.setDisplayUseLogoEnabled(true);
             bar.setLogo(res);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp(){
+        if (backButtonEnabled) {
+            finish();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    protected void enableBackButton() {
+        android.support.v7.app.ActionBar bar = getSupportActionBar();
+
+        if (bar != null) {
+            bar.setDisplayHomeAsUpEnabled(true);
+            backButtonEnabled = true;
         }
     }
 }

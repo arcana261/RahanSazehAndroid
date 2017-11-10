@@ -101,7 +101,8 @@
                 android:layout_alignParentStart="true"
                 android:ems="3"
                 android:inputType="numberDecimal"
-                android:maxEms="3" />
+                android:maxEms="3"
+                android:maxLength="3"/>
 
             <Spinner
                 android:layout_width="wrap_content"
@@ -124,6 +125,7 @@
                 android:id="@+id/txtLicensePlateLeft"
                 android:layout_toLeftOf="@id/layoutIRContainer"
                 android:layout_toStartOf="@id/layoutIRContainer"
+                android:maxLength="2"
                 >
                 <requestFocus/>
             </EditText>
@@ -190,6 +192,7 @@
                 android:gravity="center"
                 android:layout_height="wrap_content"
                 android:id="@+id/txtArrivalTime"
+                android:enabled="false"
                 android:text="@string/choose_time"/>
         </LinearLayout>
 
@@ -231,6 +234,7 @@
                 android:hint="مسافر پیاده‌شده"
                 android:id="@+id/unloadPassengersCount"
                 android:inputType="numberDecimal"
+                android:maxLength="2"
                 android:enabled="false"/>
 
             <EditText
@@ -239,6 +243,7 @@
                 android:layout_height="wrap_content"
                 android:hint="مسافر سوارشده"
                 android:id="@+id/loadPassengersCount"
+                android:maxLength="2"
                 android:inputType="numberDecimal" />
         </LinearLayout>
     </LinearLayout>

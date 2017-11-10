@@ -1,9 +1,6 @@
 package com.example.arcana.rahansazeh;
 
-import android.app.ActionBar;
-import android.app.DialogFragment;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,8 +12,12 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
-import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
+import com.example.arcana.rahansazeh.model.LicensePlate;
+import com.example.arcana.rahansazeh.model.Record;
+import com.example.arcana.rahansazeh.model.Time;
+import com.example.arcana.rahansazeh.validation.TextValidator;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.util.ArrayList;
@@ -36,6 +37,17 @@ public class DataEntryActivity extends BaseActivity {
     private EditText loadPassengersCount;
     private TextView txtDepartureTime;
     private TextView txtArrivalTime;
+    private ToggleButton btnTaxiUnLoad;
+    private ToggleButton btnTaxiLoad;
+
+    private TextValidator licensePlateLeftValidator;
+    private TextValidator licensePlateRightValidator;
+    private TextValidator arrivalTimeValidator;
+    private TextValidator departureTimeValidator;
+    private TextValidator loadPassengerCountValidator;
+    private TextValidator unloadPassengerCountValidator;
+
+    private ArrayList<Record> records;
 
     private String fixDateStr(String value) {
         if (value.length() < 1) {
@@ -62,12 +74,6 @@ public class DataEntryActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onSupportNavigateUp(){
-        finish();
-        return true;
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.data_entry, menu);
@@ -86,12 +92,7 @@ public class DataEntryActivity extends BaseActivity {
         setContentView(R.layout.activity_data_entry);
 
         forceRTLIfSupported();
-        //ActionBar bar = getActionBar();//.setDisplayHomeAsUpEnabled(true);
-        android.support.v7.app.ActionBar bar2 = getSupportActionBar();
-
-        if (bar2 != null) {
-            bar2.setDisplayHomeAsUpEnabled(true);
-        }
+        enableBackButton();
 
         final DataEntryActivity activity = this;
 
@@ -106,6 +107,19 @@ public class DataEntryActivity extends BaseActivity {
         loadPassengersCount = findViewById(R.id.loadPassengersCount);
         txtDepartureTime = findViewById(R.id.txtDepartureTime);
         txtArrivalTime = findViewById(R.id.txtArrivalTime);
+        btnTaxiLoad = findViewById(R.id.btnTaxiLoad);
+        btnTaxiUnLoad = findViewById(R.id.btnTaxiUnLoad);
+
+        licensePlateLeftValidator = TextValidator.applyLength(txtLicensePlateLeft, 2);
+        licensePlateRightValidator = TextValidator.applyLength(txtLicensePlateRight, 3);
+        arrivalTimeValidator = TextValidator.applyRegExp(txtArrivalTime,
+                "^\\d\\d:\\d\\d:\\d\\d",
+                "زمان رسیدن را انتخاب کنید");
+        departureTimeValidator = TextValidator.applyRegExp(txtDepartureTime,
+                "\\d\\d:\\d\\d:\\d\\d",
+                "ساعت اعزام را انتخاب کنید");
+        loadPassengerCountValidator = TextValidator.applyLength(loadPassengersCount, 1, 2);
+        unloadPassengerCountValidator = TextValidator.applyLength(unloadPassengersCount, 1, 2);
 
         txtLicensePlateLeft.requestFocus();
 
@@ -215,6 +229,14 @@ public class DataEntryActivity extends BaseActivity {
                 android.R.layout.simple_spinner_item, vehicleTypeList);
         vehicleTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinTaxiType.setAdapter(vehicleTypeAdapter);
+
+        records = new ArrayList<>();
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey("records")) {
+                records = (ArrayList<Record>) savedInstanceState.getSerializable("records");
+            }
+        }
     }
 
     public void clear() {
@@ -261,21 +283,54 @@ public class DataEntryActivity extends BaseActivity {
 
     public void onBtnSelectDepartureTimeClicked(View view) {
         showTimePickerDialog("departure");
-//        TimePickerFragment newFragment = new TimePickerFragment();
-//        newFragment.setActivity(this);
-//        newFragment.setCause("departure");
-//        newFragment.show(getFragmentManager(), "timePicker");
     }
 
     public void onBtnSelectArrivalTimeClicked(View view) {
         showTimePickerDialog("arrival");
-//        TimePickerFragment newFragment = new TimePickerFragment();
-//        newFragment.setActivity(this);
-//        newFragment.setCause("arrival");
-//        newFragment.show(getFragmentManager(), "timePicker");
+    }
+
+    @Override
+    public void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable("records", records);
     }
 
     public void onSaveClicked(View view) {
-        clear();
+        if (licensePlateLeftValidator.isValid() &&
+                licensePlateRightValidator.isValid() &&
+                arrivalTimeValidator.isValid() &&
+                departureTimeValidator.isValid() &&
+                loadPassengerCountValidator.isValid() &&
+                unloadPassengerCountValidator.isValid()) {
+            Record newRecord = new Record();
+
+            if (txtArrivalTime.isEnabled()) {
+                newRecord.setArrivalTime(new Time(txtArrivalTime.getText().toString()));
+            }
+
+            if (txtDepartureTime.isEnabled()) {
+                newRecord.setDepartureTime(new Time(txtDepartureTime.getText().toString()));
+            }
+
+            newRecord.setLicensePlate(new LicensePlate(
+                    txtLicensePlateLeft.getText().toString(),
+                    txtLicensePlateRight.getText().toString(),
+                    spinnerLicensePlate.getSelectedItem().toString()));
+            newRecord.setVehicleType(spinTaxiType.getSelectedItem().toString());
+            newRecord.setPassengerLoaded(btnTaxiLoad.isChecked());
+            newRecord.setPassengerUnloaded(btnTaxiUnLoad.isChecked());
+
+            if (loadPassengersCount.getText().length() > 0) {
+                newRecord.setPassengerLoadCount(Integer.parseInt(loadPassengersCount.getText().toString()));
+            }
+
+            if (unloadPassengersCount.getText().length() > 0) {
+                newRecord.setPassengerUnloadCount(Integer.parseInt(unloadPassengersCount.getText().toString()));
+            }
+
+            records.add(newRecord);
+            clear();
+        }
     }
 }
