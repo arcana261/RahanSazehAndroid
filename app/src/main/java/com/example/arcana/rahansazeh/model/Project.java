@@ -24,6 +24,10 @@ public class Project {
     @Index(unique = true)
     private String title;
 
+    @NotNull
+    @Index(unique = true)
+    private Long externalId;
+
     @ToMany(referencedJoinProperty = "projectId")
     @OrderBy("title ASC")
     private List<ProjectLine> projectLines;
@@ -36,10 +40,11 @@ public class Project {
     @Generated(hash = 1378029107)
     private transient ProjectDao myDao;
 
-    @Generated(hash = 649288122)
-    public Project(Long id, @NotNull String title) {
+    @Generated(hash = 447580162)
+    public Project(Long id, @NotNull String title, @NotNull Long externalId) {
         this.id = id;
         this.title = title;
+        this.externalId = externalId;
     }
 
     @Generated(hash = 1767516619)
@@ -125,6 +130,14 @@ public class Project {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
+    }
+
+    public Long getExternalId() {
+        return this.externalId;
+    }
+
+    public void setExternalId(Long externalId) {
+        this.externalId = externalId;
     }
 
     /** called by internal mechanisms, do not call yourself. */

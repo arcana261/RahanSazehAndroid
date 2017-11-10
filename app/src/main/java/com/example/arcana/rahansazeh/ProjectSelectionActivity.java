@@ -59,7 +59,7 @@ public class ProjectSelectionActivity extends BaseActivity {
         protected AsyncTaskResult<List<ServiceProject>> doInBackground(Void... voids) {
             try {
                 ProjectListService service = services().createProjectList();
-                return new AsyncTaskResult<>(service.getProjects());
+                return new AsyncTaskResult<>(service.getProjects(userName));
             }
             catch (Exception err) {
                 return new AsyncTaskResult<>(err);
@@ -74,6 +74,9 @@ public class ProjectSelectionActivity extends BaseActivity {
             progressDialog.setIndeterminate(false);
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progressDialog.show();
+
+            progressDialog.setCancelable(false);
+            progressDialog.setCanceledOnTouchOutside(false);
         }
 
         @Override
@@ -91,16 +94,19 @@ public class ProjectSelectionActivity extends BaseActivity {
                     Project project;
 
                     List<Project> projects = projectDao.queryBuilder()
-                            .where(ProjectDao.Properties.Title.eq(serviceProject.getTitle()))
+                            .where(ProjectDao.Properties.ExternalId.eq(serviceProject.getId()))
                             .offset(0)
                             .limit(1)
                             .list();
 
                     if (projects.size() > 0) {
                         project = projects.get(0);
+                        project.setTitle(serviceProject.getTitle());
+                        projectDao.update(project);
                     }
                     else {
-                        project = new Project(null, serviceProject.getTitle());
+                        project = new Project(null, serviceProject.getTitle(),
+                                serviceProject.getId());
                         projectDao.insert(project);
                     }
 
@@ -111,8 +117,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                 .filter(new Predicate<ProjectLine>() {
                                     @Override
                                     public boolean predict(ProjectLine projectLine) {
-                                        return projectLine.getTitle()
-                                                .equals(serviceProjectLine.getTitle());
+                                        return projectLine.getExternalId()
+                                                == serviceProjectLine.getId();
                                     }
                                 }).firstOrNull().execute();
 
@@ -122,17 +128,20 @@ public class ProjectSelectionActivity extends BaseActivity {
                                     serviceProjectLine.getTitle(),
                                     null,
                                     serviceProjectLine.getHead(),
-                                    serviceProjectLine.getTail());
+                                    serviceProjectLine.getTail(),
+                                    serviceProjectLine.getId());
                             projectLine.setProject(project);
-
                             projectLineDao.insert(projectLine);
                         }
                         else {
                             projectLine.setHead(serviceProjectLine.getHead());
                             projectLine.setTail(serviceProjectLine.getTail());
+                            projectLine.setTitle(serviceProjectLine.getTitle());
                             projectLineDao.save(projectLine);
                         }
                     }
+
+                    project.resetProjectLines();
 
                     Collection<ProjectLine> removeList = Queriable.create(existingProjectLines)
                             .filter(new Predicate<ProjectLine>() {
@@ -142,8 +151,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                             .exists(new Predicate<ServiceProjectLine>() {
                                                 @Override
                                                 public boolean predict(ServiceProjectLine serviceProjectLine) {
-                                                    return projectLine.getTitle()
-                                                            .equals(serviceProjectLine.getTitle());
+                                                    return projectLine.getExternalId() ==
+                                                            serviceProjectLine.getId();
                                                 }
                                             }).execute();
                                 }
@@ -162,8 +171,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                         .exists(new Predicate<ServiceProject>() {
                                             @Override
                                             public boolean predict(ServiceProject serviceProject) {
-                                                return project.getTitle().equals(
-                                                        serviceProject.getTitle());
+                                                return project.getExternalId() ==
+                                                        serviceProject.getId();
                                             }
                                         }).execute();
                             }
@@ -432,7 +441,11 @@ public class ProjectSelectionActivity extends BaseActivity {
     public void onNextClicked(View view) {
         Intent intent = new Intent(this, DataEntryActivity.class);
 
-        intent.putExtra("userName", userName);
+        DataEntryActivity.Params params = new DataEntryActivity.Params(userName,
+                selectedProject.getId(), selectedLine.getId(),
+                hasSelectedHead, selectedYear, selectedMonth,
+                selectedDay);
+        intent.putExtra("params", params);
 
         startActivity(intent);
     }

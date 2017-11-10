@@ -64,6 +64,9 @@ public class LoginActivity extends BaseActivity {
                 progressDialog.setIndeterminate(false);
                 progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 progressDialog.show();
+
+                progressDialog.setCancelable(false);
+                progressDialog.setCanceledOnTouchOutside(false);
             }
         }
 

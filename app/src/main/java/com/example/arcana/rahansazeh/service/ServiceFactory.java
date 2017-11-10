@@ -7,4 +7,6 @@ package com.example.arcana.rahansazeh.service;
 public interface ServiceFactory {
     LoginService createLogin();
     ProjectListService createProjectList();
+    VehicleTypeService createVehicleType();
+    VehicleService createVehicle();
 }

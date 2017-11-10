@@ -13,12 +13,12 @@ import java.util.List;
 
 public class MockProjectListService extends BaseMockService implements ProjectListService {
     @Override
-    public List<ServiceProject> getProjects() {
+    public List<ServiceProject> getProjects(String userName) {
         sleep();
 
         ServiceProjectLine line = new ServiceProjectLine(
-                "293", "میدان فاطمی", "پایانه سازمان آب");
-        ServiceProject project = new ServiceProject(
+                1, "293", "میدان فاطمی", "پایانه سازمان آب");
+        ServiceProject project = new ServiceProject(1,
                 "ساماندهی سامانه تاکسی‌رانی تهران" + "\n" +
                         "ساماندهی میدان کتاب - منطقه ۲ تهران" + "\n" +
                         "طرح جامع حمل و نقل ترافیک سیرجان");

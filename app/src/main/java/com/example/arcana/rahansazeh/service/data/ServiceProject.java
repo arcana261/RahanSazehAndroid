@@ -8,13 +8,12 @@ import java.util.List;
  */
 
 public class ServiceProject {
+    private long id;
     private String title;
     private List<ServiceProjectLine> lines;
 
-    public ServiceProject() {
-    }
-
-    public ServiceProject(String title) {
+    public ServiceProject(long id, String title) {
+        this.setId(id);
         this.title = title;
     }
 
@@ -40,5 +39,13 @@ public class ServiceProject {
 
     public void removeLine(ServiceProjectLine line) {
         getLines().remove(line);
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }
