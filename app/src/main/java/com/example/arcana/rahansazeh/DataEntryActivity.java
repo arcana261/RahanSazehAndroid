@@ -4,42 +4,48 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.example.arcana.rahansazeh.adapters.LicensePlateAdapter;
+import com.example.arcana.rahansazeh.adapters.VehicleTypeAdapter;
 import com.example.arcana.rahansazeh.model.LicensePlate;
+import com.example.arcana.rahansazeh.model.OutgoingVehicleRecord;
+import com.example.arcana.rahansazeh.model.OutgoingVehicleRecordDao;
 import com.example.arcana.rahansazeh.model.Project;
 import com.example.arcana.rahansazeh.model.ProjectDao;
 import com.example.arcana.rahansazeh.model.ProjectLine;
 import com.example.arcana.rahansazeh.model.ProjectLineDao;
-import com.example.arcana.rahansazeh.model.Record;
 import com.example.arcana.rahansazeh.model.Time;
+import com.example.arcana.rahansazeh.model.User;
+import com.example.arcana.rahansazeh.model.UserDao;
 import com.example.arcana.rahansazeh.model.Vehicle;
 import com.example.arcana.rahansazeh.model.VehicleDao;
 import com.example.arcana.rahansazeh.model.VehicleType;
 import com.example.arcana.rahansazeh.model.VehicleTypeDao;
 import com.example.arcana.rahansazeh.service.VehicleService;
 import com.example.arcana.rahansazeh.service.VehicleTypeService;
-import com.example.arcana.rahansazeh.service.data.ServiceProject;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicle;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicleType;
 import com.example.arcana.rahansazeh.utils.AsyncTaskResult;
+import com.example.arcana.rahansazeh.utils.LicensePlateFormatter;
 import com.example.arcana.rahansazeh.validation.TextValidator;
 import com.gurkashi.lava.lambdas.Predicate;
+import com.gurkashi.lava.lambdas.Selector;
 import com.gurkashi.lava.queries.stracture.Queriable;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -49,25 +55,21 @@ public class DataEntryActivity extends BaseActivity {
     private TextView txtTimeHour;
     private TextView txtTimeMinute;
     private TextView txtTimeSecond;
-    private Spinner spinnerLicensePlate;
     private Spinner spinTaxiType;
-    private EditText txtLicensePlateLeft;
-    private EditText txtLicensePlateRight;
     private EditText unloadPassengersCount;
     private EditText loadPassengersCount;
     private TextView txtDepartureTime;
     private TextView txtArrivalTime;
     private ToggleButton btnTaxiUnLoad;
     private ToggleButton btnTaxiLoad;
+    private AppCompatAutoCompleteTextView txtLicensePlate;
+    private Button btnSelectArrivalTime;
+    private Button btnSelectDepartureTime;
 
-    private TextValidator licensePlateLeftValidator;
-    private TextValidator licensePlateRightValidator;
-    private TextValidator arrivalTimeValidator;
-    private TextValidator departureTimeValidator;
     private TextValidator loadPassengerCountValidator;
     private TextValidator unloadPassengerCountValidator;
 
-    private ArrayList<Record> records;
+    private VehicleTypeAdapter vehicleTypeAdapter;
 
     public static class Params implements Serializable {
         private String userName;
@@ -89,7 +91,7 @@ public class DataEntryActivity extends BaseActivity {
             this.selectedHead = selectedHead;
             this.year = year;
             this.month = month;
-            this.day = day;
+            this.setDay(day);
         }
 
         public String getUserName() {
@@ -420,62 +422,52 @@ public class DataEntryActivity extends BaseActivity {
         txtTimeHour = findViewById(R.id.txtTimeHour);
         txtTimeMinute = findViewById(R.id.txtTimeMinute);
         txtTimeSecond = findViewById(R.id.txtTimeSecond);
-        spinnerLicensePlate = findViewById(R.id.spinnerLicensePlate);
         spinTaxiType = findViewById(R.id.spinTaxiType);
-        txtLicensePlateLeft = findViewById(R.id.txtLicensePlateLeft);
-        txtLicensePlateRight = findViewById(R.id.txtLicensePlateRight);
         unloadPassengersCount = findViewById(R.id.unloadPassengersCount);
         loadPassengersCount = findViewById(R.id.loadPassengersCount);
         txtDepartureTime = findViewById(R.id.txtDepartureTime);
         txtArrivalTime = findViewById(R.id.txtArrivalTime);
         btnTaxiLoad = findViewById(R.id.btnTaxiLoad);
         btnTaxiUnLoad = findViewById(R.id.btnTaxiUnLoad);
+        txtLicensePlate = findViewById(R.id.txtLicensePlate);
+        btnSelectArrivalTime = findViewById(R.id.btnSelectArrivalTime);
+        btnSelectDepartureTime = findViewById(R.id.btnSelectDepartureTime);
 
-        licensePlateLeftValidator = TextValidator.applyLength(txtLicensePlateLeft, 2);
-        licensePlateRightValidator = TextValidator.applyLength(txtLicensePlateRight, 3);
-        arrivalTimeValidator = TextValidator.applyRegExp(txtArrivalTime,
-                "^\\d\\d:\\d\\d:\\d\\d",
-                "زمان رسیدن را انتخاب کنید");
-        departureTimeValidator = TextValidator.applyRegExp(txtDepartureTime,
-                "\\d\\d:\\d\\d:\\d\\d",
-                "ساعت اعزام را انتخاب کنید");
-        loadPassengerCountValidator = TextValidator.applyLength(loadPassengersCount, 1, 2);
-        unloadPassengerCountValidator = TextValidator.applyLength(unloadPassengersCount, 1, 2);
+        final LicensePlateAdapter licensePlateAdapter =
+                new LicensePlateAdapter(this, getDaoSession());
+        txtLicensePlate.setAdapter(licensePlateAdapter);
 
-        txtLicensePlateLeft.requestFocus();
+        vehicleTypeAdapter =
+                new VehicleTypeAdapter(this, getDaoSession());
 
-        txtLicensePlateLeft.addTextChangedListener(new TextWatcher() {
+        txtLicensePlate.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Vehicle selectedVehicle = licensePlateAdapter.getVehicleById(id);
 
-            }
+                txtLicensePlate.setText(
+                        LicensePlateFormatter.toString(selectedVehicle.getLicense()));
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                boolean found = false;
+                for (int i = 0; i < vehicleTypeAdapter.getCount(); i++) {
+                    VehicleType type = vehicleTypeAdapter.getItem(i);
 
-            }
+                    if (type.getId() == selectedVehicle.getVehicleTypeId()) {
+                        spinTaxiType.setSelection(i);
+                        found = true;
+                        break;
+                    }
+                }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() >= 2) {
-                    spinnerLicensePlate.requestFocus();
+                if (!found) {
+                    spinTaxiType.setSelection(0);
                 }
             }
         });
 
-        spinnerLicensePlate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                txtLicensePlateRight.requestFocus();
-            }
+        txtLicensePlate.addTextChangedListener(new TextWatcher() {
+            private boolean isInsertion = false;
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        txtLicensePlateRight.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -483,16 +475,54 @@ public class DataEntryActivity extends BaseActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                isInsertion = count > before;
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length() >= 3) {
+//                if (isInsertion && s.length() == 2) {
+//                    s.append(" " + "ت" + " ");
+//                }
+//                else if (!isInsertion && s.length() > 2 && s.length() < 5) {
+//                    s.replace(1, s.length(), "");
+//                }
+
+                if (isInsertion && s.length() == 2) {
+                    s.insert(0, " " + "ت" + " ");
+                }
+                else if (isInsertion && s.length() > 2) {
+                    int index = s.length() - 1;
+                    while (index >= 0 && s.charAt(index) != ' ') {
+                        index = index - 1;
+                    }
+
+                    if (index >= 0) {
+                        index = index + 1 + 2;
+
+                        if (index < s.length()) {
+                            String excess = s.subSequence(index, s.length()).toString();
+
+                            int head = 0;
+                            while (s.charAt(head) != ' ') {
+                                head = head + 1;
+                            }
+
+                            s.replace(index, s.length(), "");
+                            s.insert(head, excess);
+                        }
+                    }
+                }
+
+                if (s.length() >= 8) {
                     spinTaxiType.requestFocus();
                 }
             }
         });
+
+        loadPassengerCountValidator = TextValidator.applyLength(loadPassengersCount, 1, 2);
+        unloadPassengerCountValidator = TextValidator.applyLength(unloadPassengersCount, 1, 2);
+
+        txtLicensePlate.requestFocus();
 
         spinTaxiType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -524,53 +554,19 @@ public class DataEntryActivity extends BaseActivity {
             }
         }, 1000);
 
-        List<String> licenseTypeList;
-
-        licenseTypeList = new ArrayList<String>();
-        licenseTypeList.add("نوع پلاک را انتخاب کنید");
-        licenseTypeList.add("ت");
-        licenseTypeList.add("ع");
-
-        ArrayAdapter<String> licenseTypeAdapter = new ArrayAdapter<String>(getApplicationContext(),
-                android.R.layout.simple_spinner_item, licenseTypeList);
-        licenseTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerLicensePlate.setAdapter(licenseTypeAdapter);
-
-        List<String> vehicleTypeList;
-
-        vehicleTypeList = new ArrayList<String>();
-        vehicleTypeList.add("نوع خودرو را انتخاب کنید");
-        vehicleTypeList.add("ون");
-        vehicleTypeList.add("پژو (۴۰۵-روآ-آردی)");
-        vehicleTypeList.add("سمند");
-        vehicleTypeList.add("پیکان");
-        vehicleTypeList.add("سایر");
-
-        ArrayAdapter<String> vehicleTypeAdapter = new ArrayAdapter<String>(getApplicationContext(),
-                android.R.layout.simple_spinner_item, vehicleTypeList);
         vehicleTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinTaxiType.setAdapter(vehicleTypeAdapter);
-
-        records = new ArrayList<>();
-
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey("records")) {
-                records = (ArrayList<Record>) savedInstanceState.getSerializable("records");
-            }
-        }
     }
 
     public void clear() {
-        txtLicensePlateLeft.setText("");
-        txtLicensePlateRight.setText("");
+        txtLicensePlate.setText("");
         loadPassengersCount.setText("");
         unloadPassengersCount.setText("");
         txtArrivalTime.setText(getString(R.string.choose_time));
         txtDepartureTime.setText(getString(R.string.choose_time));
         spinTaxiType.setSelection(0);
-        spinnerLicensePlate.setSelection(0);
 
-        txtLicensePlateLeft.requestFocus();
+        txtLicensePlate.requestFocus();
     }
 
     public void onTimeSet(String cause, int hour, int minute, int second) {
@@ -613,44 +609,101 @@ public class DataEntryActivity extends BaseActivity {
     @Override
     public void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        outState.putSerializable("records", records);
     }
 
     public void onSaveClicked(View view) {
-        if (licensePlateLeftValidator.isValid() &&
-                licensePlateRightValidator.isValid() &&
-                arrivalTimeValidator.isValid() &&
-                departureTimeValidator.isValid() &&
-                loadPassengerCountValidator.isValid() &&
-                unloadPassengerCountValidator.isValid()) {
-            Record newRecord = new Record();
+        TextValidator[] allValidators = new TextValidator[] {
+            loadPassengerCountValidator,
+            unloadPassengerCountValidator
+        };
 
-            if (txtArrivalTime.isEnabled()) {
-                newRecord.setArrivalTime(new Time(txtArrivalTime.getText().toString()));
+        boolean isValid = true;
+
+        for (TextValidator validator : allValidators) {
+            if (!validator.isValid()) {
+                isValid = false;
+            }
+        }
+
+        if (!btnTaxiLoad.isChecked() && !btnTaxiUnLoad.isChecked()) {
+            btnTaxiLoad.setError("یکی از گزینه ها را انتخاب کنید");
+            btnTaxiUnLoad.setError("یکی از گزینه ها را انتخاب کنید");
+            isValid = false;
+        }
+        else {
+            btnTaxiLoad.setError(null);
+            btnTaxiUnLoad.setError(null);
+        }
+
+        if (txtArrivalTime.isEnabled() &&
+                !txtArrivalTime.getText().toString().matches("^\\d{2}:\\d{2}:\\d{2}")) {
+            btnSelectArrivalTime.setError("زمان رسیدن را انتخاب کنید");
+            isValid = false;
+        }
+        else {
+            btnSelectArrivalTime.setError(null);
+        }
+
+        if (txtDepartureTime.isEnabled() &&
+                !txtDepartureTime.getText().toString().matches("^\\d{2}:\\d{2}:\\d{2}")) {
+            btnSelectDepartureTime.setError("زمان اعزام را انتخاب کنید");
+            isValid = false;
+        }
+        else {
+            btnSelectDepartureTime.setError(null);
+        }
+
+        if (spinTaxiType.getSelectedItemPosition() < 1) {
+            isValid = false;
+        }
+
+        if (isValid) {
+            UserDao userDao = getDaoSession().getUserDao();
+            User user = Queriable.create(
+                userDao.queryBuilder()
+                        .where(UserDao.Properties.NationalCode.eq(params.getUserName()))
+                        .limit(1)
+                        .offset(0)
+                        .list()
+            ).first().execute();
+
+            Integer[] defaultTimes = new Integer[3];
+            for (int i = 0; i < defaultTimes.length; i++) {
+                defaultTimes[i] = 0;
             }
 
-            if (txtDepartureTime.isEnabled()) {
-                newRecord.setDepartureTime(new Time(txtDepartureTime.getText().toString()));
-            }
+            Integer[] arrivalTime = txtArrivalTime.isEnabled() ?
+                    Queriable.create(txtArrivalTime.getText().toString().split(":"))
+                    .map(new Selector<String, Integer>() {
+                        @Override
+                        public Integer select(String s) {
+                            return Integer.parseInt(s);
+                        }
+                    }).execute().toArray(new Integer[0]) : defaultTimes;
 
-//            newRecord.setLicensePlate(new LicensePlate(
-//                    txtLicensePlateLeft.getText().toString(),
-//                    txtLicensePlateRight.getText().toString(),
-//                    spinnerLicensePlate.getSelectedItem().toString()));
-            newRecord.setVehicleType(spinTaxiType.getSelectedItem().toString());
-            newRecord.setPassengerLoaded(btnTaxiLoad.isChecked());
-            newRecord.setPassengerUnloaded(btnTaxiUnLoad.isChecked());
+            Integer[] departureTime = txtDepartureTime.isEnabled() ?
+                    Queriable.create(txtDepartureTime.getText().toString().split(":"))
+                            .map(new Selector<String, Integer>() {
+                                @Override
+                                public Integer select(String s) {
+                                    return Integer.parseInt(s);
+                                }
+                            }).execute().toArray(new Integer[0]) : defaultTimes;
 
-            if (loadPassengersCount.getText().length() > 0) {
-                newRecord.setPassengerLoadCount(Integer.parseInt(loadPassengersCount.getText().toString()));
-            }
+            OutgoingVehicleRecord record = new OutgoingVehicleRecord(
+                    null, user.getId(), btnTaxiLoad.isChecked(),
+                    btnTaxiUnLoad.isChecked(), params.getProjectId(),
+                    params.getLineId(), params.getYear(), params.getMonth(),
+                    params.getDay(), txtArrivalTime.isEnabled(), arrivalTime[0],
+                    arrivalTime[1], arrivalTime[2], txtDepartureTime.isEnabled(),
+                    departureTime[0], departureTime[1], departureTime[2],
+                    txtLicensePlate.getText().toString().replace(" ", "") + "00",
+                    vehicleTypeAdapter.getItem(spinTaxiType.getSelectedItemPosition()).getTitle()
+            );
 
-            if (unloadPassengersCount.getText().length() > 0) {
-                newRecord.setPassengerUnloadCount(Integer.parseInt(unloadPassengersCount.getText().toString()));
-            }
+            OutgoingVehicleRecordDao outgoingDao = getDaoSession().getOutgoingVehicleRecordDao();
+            outgoingDao.save(record);
 
-            records.add(newRecord);
             clear();
         }
     }

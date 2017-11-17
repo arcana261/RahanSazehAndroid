@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.arcana.rahansazeh.R;
-import com.example.arcana.rahansazeh.model.Record;
+import com.example.arcana.rahansazeh.model.OutgoingVehicleRecord;
 import com.example.arcana.rahansazeh.validation.TextValidator;
 
 import java.util.ArrayList;
@@ -17,7 +17,8 @@ import java.util.ArrayList;
  * Created by arcana on 11/8/17.
  */
 
-public class VerifyDataAdapter extends ArrayAdapter<Record> implements View.OnClickListener {
+/*
+public class VerifyDataAdapter extends ArrayAdapter<OutgoingVehicleRecord> implements View.OnClickListener {
     private ArrayList<Record> dataSet;
     private Context context;
 
@@ -67,3 +68,5 @@ public class VerifyDataAdapter extends ArrayAdapter<Record> implements View.OnCl
 
     }
 }
+
+**/

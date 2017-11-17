@@ -3,8 +3,6 @@
     <string name="code_melli">کد ملی خود را وارد نمایید</string>
     <string name="login">ورود</string>
     <string name="companyLogo">لوگوی شرکت</string>
-    <string name="title_item_list">Items</string>
-    <string name="title_item_detail">Item Detail</string>
     <string name="choose">انتخاب کنید</string>
     <string name="project_name">نام پروژه</string>
     <string name="project_date">تاریخ انجام</string>

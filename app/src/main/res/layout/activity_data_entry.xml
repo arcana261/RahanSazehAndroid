@@ -9,7 +9,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,72 +86,17 @@
                 />
         </LinearLayout>
 
-        <RelativeLayout
+        <android.support.v7.widget.AppCompatAutoCompleteTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="پلاک خودرو"
+            android:gravity="center"
             android:background="@drawable/pelak"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginTop="10dp">
-
-            <EditText
-                android:id="@+id/txtLicensePlateRight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:ems="3"
-                android:inputType="numberDecimal"
-                android:maxEms="3"
-                android:maxLength="3"/>
-
-            <Spinner
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinnerLicensePlate"
-                android:layout_toLeftOf="@id/txtLicensePlateLeft"
-                android:layout_toStartOf="@id/txtLicensePlateLeft"
-                android:layout_toRightOf="@id/txtLicensePlateRight"
-                android:layout_toEndOf="@id/txtLicensePlateRight"
-                android:layout_alignBottom="@id/txtLicensePlateLeft"
-                style="@style/Base.Widget.AppCompat.Spinner.Underlined"
-                />
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="2"
-                android:maxEms="2"
-                android:id="@+id/txtLicensePlateLeft"
-                android:layout_toLeftOf="@id/layoutIRContainer"
-                android:layout_toStartOf="@id/layoutIRContainer"
-                android:maxLength="2"
-                >
-                <requestFocus/>
-            </EditText>
-
-            <LinearLayout
-                android:layout_width="60dp"
-                android:orientation="vertical"
-                android:layout_height="60dp"
-                android:background="@color/colorAccent"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:gravity="center_vertical"
-                android:padding="5dp"
-                android:id="@+id/layoutIRContainer">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="I.R."/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="IRAN"/>
-            </LinearLayout>
-        </RelativeLayout>
+            android:drawableLeft="@drawable/pelak_left"
+            android:layout_marginTop="10dp"
+            android:id="@+id/txtLicensePlate"
+            android:completionThreshold="1"
+            />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -212,6 +159,7 @@
                 style="@style/Widget.AppCompat.Button.Colored"/>
 
             <Button
+                android:id="@+id/btnSelectArrivalTime"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
