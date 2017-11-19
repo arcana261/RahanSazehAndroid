@@ -1,207 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.arcana.rahansazeh.DataEntryActivity">
-    
-    <LinearLayout
+
+    <TabHost
+        android:id="@+id/tabHost"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:id="@+id/txtTimeSecond"
-                android:text="33"/>
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></TabWidget>
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text=":"/>
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:id="@+id/txtTimeMinute"
-                android:text="46"/>
+                <android.support.constraint.ConstraintLayout
+                    android:id="@+id/tabVehicleEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text=":"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:orientation="vertical">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:id="@+id/txtTimeHour"
-                android:text="12"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/txtTimeSecond"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="3"
+                                android:gravity="center"
+                                android:text="33" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text=":" />
+
+                            <TextView
+                                android:id="@+id/txtTimeMinute"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="3"
+                                android:gravity="center"
+                                android:text="46" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text=":" />
+
+                            <TextView
+                                android:id="@+id/txtTimeHour"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="3"
+                                android:gravity="center"
+                                android:text="12" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp">
+
+                            <ToggleButton
+                                android:id="@+id/btnTaxiUnLoad"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@drawable/toggle_selector"
+                                android:gravity="center"
+                                android:textColor="@drawable/toggle_fg_selector"
+                                android:textOff="پیاده شده"
+                                android:textOn="پیاده شده" />
+
+                            <ToggleButton
+                                android:id="@+id/btnTaxiLoad"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@drawable/toggle_selector"
+                                android:checked="true"
+                                android:gravity="center"
+                                android:textColor="@drawable/toggle_fg_selector"
+                                android:textOff="سوار شده"
+                                android:textOn="سوار شده" />
+                        </LinearLayout>
+
+                        <android.support.v7.widget.AppCompatAutoCompleteTextView
+                            android:id="@+id/txtLicensePlate"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/pelak"
+                            android:completionThreshold="1"
+                            android:drawableLeft="@drawable/pelak_left"
+                            android:gravity="center"
+                            android:hint="پلاک خودرو" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="نوع خودرو" />
+
+                            <Spinner
+                                android:id="@+id/spinTaxiType"
+                                style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="3"></Spinner>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/txtDepartureTime"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="@string/choose_time" />
+
+                            <TextView
+                                android:id="@+id/txtArrivalTime"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:enabled="false"
+                                android:gravity="center"
+                                android:text="@string/choose_time" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/btnSelectDepartureTime"
+                                style="@style/Widget.AppCompat.Button.Colored"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:onClick="onBtnSelectDepartureTimeClicked"
+                                android:text="زمان اعزام" />
+
+                            <Button
+                                android:id="@+id/btnSelectArrivalTime"
+                                style="@style/Widget.AppCompat.Button.Colored"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:enabled="false"
+                                android:onClick="onBtnSelectArrivalTimeClicked"
+                                android:text="زمان رسیدن" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <EditText
+                                android:id="@+id/unloadPassengersCount"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:enabled="false"
+                                android:hint="مسافر پیاده‌شده"
+                                android:inputType="numberDecimal"
+                                android:maxLength="2" />
+
+                            <EditText
+                                android:id="@+id/loadPassengersCount"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="مسافر سوارشده"
+                                android:inputType="numberDecimal"
+                                android:maxLength="2" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnSave"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:onClick="onSaveClicked"
+                        android:text="ثبت"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+                </android.support.constraint.ConstraintLayout>
+
+                <RelativeLayout
+                    android:id="@+id/tabPassengerEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:orientation="vertical"
+                        >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="انتخاب بازه زمانی"/>
+
+                        <Spinner
+                            android:id="@+id/spinTimeRange"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp">
+                        </Spinner>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="انتخاب تعداد مسافر" />
+
+                            <TextView
+                                android:id="@+id/txtPassengerCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="10dp"
+                                android:text="0"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="10dp"
+                                android:text="نفر"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+
+                        <SeekBar
+                            android:id="@+id/seekPassengerCount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:max="20"/>
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnSavePassenger"
+                        style="@style/Widget.AppCompat.Button.Colored"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:onClick="onSavePassengerClicked"
+                        android:text="ثبت"
+                        android:layout_alignParentBottom="true" />
+
+                </RelativeLayout>
+
+            </FrameLayout>
+
         </LinearLayout>
+    </TabHost>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
-            <ToggleButton
-                android:id="@+id/btnTaxiUnLoad"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textOn="پیاده شده"
-                android:textOff="پیاده شده"
-                android:textColor="@drawable/toggle_fg_selector"
-                android:background="@drawable/toggle_selector"
-                />
+</LinearLayout>
 
-            <ToggleButton
-                android:id="@+id/btnTaxiLoad"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textOn="سوار شده"
-                android:textOff="سوار شده"
-                android:background="@drawable/toggle_selector"
-                android:textColor="@drawable/toggle_fg_selector"
-                android:checked="true"
-                />
-        </LinearLayout>
-
-        <android.support.v7.widget.AppCompatAutoCompleteTextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="پلاک خودرو"
-            android:gravity="center"
-            android:background="@drawable/pelak"
-            android:drawableLeft="@drawable/pelak_left"
-            android:layout_marginTop="10dp"
-            android:id="@+id/txtLicensePlate"
-            android:completionThreshold="1"
-            />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="نوع خودرو"/>
-
-            <Spinner
-                android:layout_width="0dp"
-                android:layout_weight="3"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinTaxiType"
-                style="@style/Base.Widget.AppCompat.Spinner.Underlined">
-            </Spinner>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:layout_height="wrap_content"
-                android:id="@+id/txtDepartureTime"
-                android:text="@string/choose_time"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:layout_height="wrap_content"
-                android:id="@+id/txtArrivalTime"
-                android:enabled="false"
-                android:text="@string/choose_time"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnSelectDepartureTime"
-                android:onClick="onBtnSelectDepartureTimeClicked"
-                android:text="زمان اعزام"
-                style="@style/Widget.AppCompat.Button.Colored"/>
-
-            <Button
-                android:id="@+id/btnSelectArrivalTime"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="زمان رسیدن"
-                android:onClick="onBtnSelectArrivalTimeClicked"
-                android:enabled="false"
-                style="@style/Widget.AppCompat.Button.Colored"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-            <EditText
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:hint="مسافر پیاده‌شده"
-                android:id="@+id/unloadPassengersCount"
-                android:inputType="numberDecimal"
-                android:maxLength="2"
-                android:enabled="false"/>
-
-            <EditText
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:hint="مسافر سوارشده"
-                android:id="@+id/loadPassengersCount"
-                android:maxLength="2"
-                android:inputType="numberDecimal" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="ثبت"
-        android:id="@+id/btnSave"
-        android:onClick="onSaveClicked"
-        style="@style/Widget.AppCompat.Button.Colored"/>
-</android.support.constraint.ConstraintLayout>

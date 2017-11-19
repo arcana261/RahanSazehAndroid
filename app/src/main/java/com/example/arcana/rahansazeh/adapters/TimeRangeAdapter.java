@@ -11,32 +11,27 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.arcana.rahansazeh.R;
-import com.example.arcana.rahansazeh.model.DaoSession;
-import com.example.arcana.rahansazeh.model.VehicleType;
-import com.example.arcana.rahansazeh.model.VehicleTypeDao;
+import com.example.arcana.rahansazeh.model.TimeRange;
+import com.example.arcana.rahansazeh.utils.NumberPadder;
 
 import java.util.List;
 
 /**
- * Created by arcana on 11/11/17.
+ * Created by arcana on 11/18/17.
  */
 
-public class VehicleTypeAdapter extends ArrayAdapter<VehicleType> {
-    private DaoSession session;
+public class TimeRangeAdapter extends ArrayAdapter<TimeRange> {
     private Context context;
 
-    private static VehicleType[] getVehicleTypes(DaoSession session) {
-        VehicleTypeDao vehicleTypeDao = session.getVehicleTypeDao();
+    private static TimeRange[] getTimeRanges(List<TimeRange> list) {
+        list.add(0,
+                new TimeRange(-1l, 0, 0, 0, 0));
 
-        List<VehicleType> vehicleTypeList = vehicleTypeDao.queryBuilder().list();
-        vehicleTypeList.add(0,
-                new VehicleType(1-1l, "انتخاب نوع خودرو", -1l));
-
-        return vehicleTypeList.toArray(new VehicleType[0]);
+        return list.toArray(new TimeRange[0]);
     }
 
-    public VehicleTypeAdapter(@NonNull Context context, DaoSession session) {
-        super(context, R.layout.row_vehicletype, getVehicleTypes(session));
+    public TimeRangeAdapter(@NonNull Context context, List<TimeRange> list) {
+        super(context, R.layout.row_vehicletype, getTimeRanges(list));
 
         this.context = context;
     }
@@ -46,15 +41,16 @@ public class VehicleTypeAdapter extends ArrayAdapter<VehicleType> {
     }
 
     @Override
-    public @NonNull View getView(int position, @Nullable View convertView,
+    public @NonNull
+    View getView(int position, @Nullable View convertView,
                  @NonNull ViewGroup parent) {
-        VehicleType vehicleType = getItem(position);
-        ViewHolder viewHolder;
+        TimeRange timeRange = getItem(position);
+        TimeRangeAdapter.ViewHolder viewHolder;
 
         final View result;
 
         if (convertView == null) {
-            viewHolder = new ViewHolder();
+            viewHolder = new TimeRangeAdapter.ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(context);
             convertView = inflater.inflate(R.layout.row_vehicletype, parent, false);
 
@@ -64,11 +60,28 @@ public class VehicleTypeAdapter extends ArrayAdapter<VehicleType> {
             convertView.setTag(viewHolder);
         }
         else {
-            viewHolder = (VehicleTypeAdapter.ViewHolder)convertView.getTag();
+            viewHolder = (TimeRangeAdapter.ViewHolder)convertView.getTag();
             result = convertView;
         }
 
-        viewHolder.txtVehicleType.setText(vehicleType.getTitle());
+        if (timeRange.getId() < 0) {
+            viewHolder.txtVehicleType.setText("انتخاب بازه زمانی");
+        }
+        else {
+            StringBuilder builder = new StringBuilder();
+
+            builder.append(timeRange.getEndHour())
+                    .append(":")
+                    .append(NumberPadder.formatNumber(timeRange.getEndMinute(), 2));
+
+            builder.append(" - ");
+
+            builder.append(timeRange.getStartHour())
+                    .append(":")
+                    .append(NumberPadder.formatNumber(timeRange.getStartMinute(), 2));
+
+            viewHolder.txtVehicleType.setText(builder.toString());
+        }
 
         if (position < 0) {
             viewHolder.txtVehicleType.setTextColor(Color.GRAY);

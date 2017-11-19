@@ -6,20 +6,28 @@ import android.os.Handler;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.example.arcana.rahansazeh.adapters.LicensePlateAdapter;
+import com.example.arcana.rahansazeh.adapters.TimeRangeAdapter;
 import com.example.arcana.rahansazeh.adapters.VehicleTypeAdapter;
 import com.example.arcana.rahansazeh.model.LicensePlate;
+import com.example.arcana.rahansazeh.model.OutgoingPassengerRecord;
+import com.example.arcana.rahansazeh.model.OutgoingPassengerRecordDao;
 import com.example.arcana.rahansazeh.model.OutgoingVehicleRecord;
 import com.example.arcana.rahansazeh.model.OutgoingVehicleRecordDao;
 import com.example.arcana.rahansazeh.model.Project;
@@ -27,6 +35,7 @@ import com.example.arcana.rahansazeh.model.ProjectDao;
 import com.example.arcana.rahansazeh.model.ProjectLine;
 import com.example.arcana.rahansazeh.model.ProjectLineDao;
 import com.example.arcana.rahansazeh.model.Time;
+import com.example.arcana.rahansazeh.model.TimeRange;
 import com.example.arcana.rahansazeh.model.User;
 import com.example.arcana.rahansazeh.model.UserDao;
 import com.example.arcana.rahansazeh.model.Vehicle;
@@ -46,6 +55,7 @@ import com.gurkashi.lava.queries.stracture.Queriable;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -70,6 +80,11 @@ public class DataEntryActivity extends BaseActivity {
     private TextValidator unloadPassengerCountValidator;
 
     private VehicleTypeAdapter vehicleTypeAdapter;
+    private TimeRangeAdapter timeRangeAdapter;
+    private TextView txtPassengerCount;
+    private SeekBar seekPassengerCount;
+    private Spinner spinTimeRange;
+    private Button btnSavePassenger;
 
     public static class Params implements Serializable {
         private String userName;
@@ -189,6 +204,8 @@ public class DataEntryActivity extends BaseActivity {
     }
 
     private Params params;
+
+    private TabHost tabHost;
 
     private String fixDateStr(String value) {
         if (value.length() < 1) {
@@ -432,6 +449,51 @@ public class DataEntryActivity extends BaseActivity {
         txtLicensePlate = findViewById(R.id.txtLicensePlate);
         btnSelectArrivalTime = findViewById(R.id.btnSelectArrivalTime);
         btnSelectDepartureTime = findViewById(R.id.btnSelectDepartureTime);
+        tabHost = findViewById(R.id.tabHost);
+        spinTimeRange = findViewById(R.id.spinTimeRange);
+        txtPassengerCount = findViewById(R.id.txtPassengerCount);
+        seekPassengerCount = findViewById(R.id.seekPassengerCount);
+        btnSavePassenger = findViewById(R.id.btnSavePassenger);
+
+        tabHost.setup();
+
+        TabHost.TabSpec spec = tabHost.newTabSpec("ثبت تاکسی");
+        spec.setContent(R.id.tabVehicleEntry);
+        spec.setIndicator("ثبت تاکسی");
+        tabHost.addTab(spec);
+
+        spec = tabHost.newTabSpec("ثبت مسافر");
+        spec.setContent(R.id.tabPassengerEntry);
+        spec.setIndicator("ثبت مسافر");
+        tabHost.addTab(spec);
+
+        List<TimeRange> timeRangeList = new ArrayList<>();
+        for (int i = 7; i < 23; i++) {
+            for (int j = 0; j < 60; j+=15) {
+                timeRangeList.add(new TimeRange((long)(i * 60 + j),
+                        i, i + ((j + 15) / 60), j, (j + 15) % 60));
+            }
+        }
+
+        timeRangeAdapter = new TimeRangeAdapter(this, timeRangeList);
+        spinTimeRange.setAdapter(timeRangeAdapter);
+
+        seekPassengerCount.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                txtPassengerCount.setText("" + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
         final LicensePlateAdapter licensePlateAdapter =
                 new LicensePlateAdapter(this, getDaoSession());
@@ -515,6 +577,79 @@ public class DataEntryActivity extends BaseActivity {
 
                 if (s.length() >= 8) {
                     spinTaxiType.requestFocus();
+                }
+
+                for (int i = 0; i < s.length(); i++) {
+                    switch (s.charAt(i)) {
+                        case '۱':
+                            s.replace(i, i + 1, "1");
+                            break;
+                        case '۲':
+                            s.replace(i, i + 1, "2");
+                            break;
+                        case '۳':
+                            s.replace(i, i + 1, "3");
+                            break;
+                        case '۴':
+                            s.replace(i, i + 1, "4");
+                            break;
+                        case '۵':
+                            s.replace(i, i + 1, "5");
+                            break;
+                        case '۶':
+                            s.replace(i, i + 1, "6");
+                            break;
+                        case '۷':
+                            s.replace(i, i + 1, "7");
+                            break;
+                        case '۸':
+                            s.replace(i, i + 1, "8");
+                            break;
+                        case '۹':
+                            s.replace(i, i + 1, "9");
+                            break;
+                        case '۰':
+                            s.replace(i, i + 1, "0");
+                            break;
+                        case ' ':
+                        case 'ت':
+                            break;
+                        default:
+                            s.replace(i, i + 1, "");
+                    }
+                }
+
+                if (s.length() <= 2) {
+                    for (int i = 0; i < s.length(); i++) {
+                        if (!Character.isDigit(s.charAt(i))) {
+                            s.replace(i, i + 1, "");
+                            i = i - 1;
+                        }
+                    }
+                }
+                else if (s.length() <= 5) {
+                    if (s.charAt(0) != ' ' || s.charAt(1) != 'ت' || s.charAt(2) != ' ') {
+                        s.replace(0, 3, "");
+                    }
+                    else {
+                        for (int i = 3; i < s.length(); i++) {
+                            if (!Character.isDigit(s.charAt(i))) {
+                                s.replace(i, i + 1, "");
+                                i = i - 1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    int i = 0;
+                    while (i < s.length() && s.charAt(i) != ' ') {
+                        if (!Character.isDigit(s.charAt(i))) {
+                            s.replace(i, i + 1, "");
+                            i = i - 1;
+                        }
+
+                        i = i + 1;
+                    }
                 }
             }
         });
@@ -611,6 +746,41 @@ public class DataEntryActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
     }
 
+    public void onSavePassengerClicked(View view) {
+        if (spinTimeRange.getSelectedItemPosition() < 1) {
+            btnSavePassenger.setError("بازه زمانی را انتخاب کنید");
+        }
+        else {
+            btnSavePassenger.setError(null);
+
+            UserDao userDao = getDaoSession().getUserDao();
+            User user = Queriable.create(
+                    userDao.queryBuilder()
+                            .where(UserDao.Properties.NationalCode.eq(params.getUserName()))
+                            .limit(1)
+                            .offset(0)
+                            .list()
+            ).first().execute();
+
+            TimeRange range = timeRangeAdapter.getItem(spinTimeRange.getSelectedItemPosition());
+
+            OutgoingPassengerRecord record = new OutgoingPassengerRecord(
+                    null, user.getId(), params.getProjectId(),
+                    params.getLineId(), params.getYear(),
+                    params.getMonth(), params.getDay(),
+                    range.getStartHour(), range.getStartMinute(),
+                    range.getEndHour(), range.getEndMinute(),
+                    seekPassengerCount.getProgress()
+            );
+
+            OutgoingPassengerRecordDao passengerRecordDao =
+                    getDaoSession().getOutgoingPassengerRecordDao();
+            passengerRecordDao.save(record);
+
+            showToast("ذخیره شد");
+        }
+    }
+
     public void onSaveClicked(View view) {
         TextValidator[] allValidators = new TextValidator[] {
             loadPassengerCountValidator,
@@ -705,6 +875,7 @@ public class DataEntryActivity extends BaseActivity {
             outgoingDao.save(record);
 
             clear();
+            showToast("ذخیره شد");
         }
     }
 }

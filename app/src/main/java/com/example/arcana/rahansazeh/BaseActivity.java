@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.arcana.rahansazeh.model.DaoSession;
 import com.example.arcana.rahansazeh.service.ServiceFactory;
@@ -50,6 +51,10 @@ public class BaseActivity extends AppCompatActivity {
 
     protected void showErrorDialog(String message) {
         showErrorDialog(getResources().getString(R.string.error), message);
+    }
+
+    protected void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)

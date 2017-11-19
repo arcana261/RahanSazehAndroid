@@ -62,7 +62,19 @@ public class LicensePlateAdapter extends BaseAdapter implements Filterable, Them
         if (criteria != null) {
             criteria = criteria
                     .replace(" ", "")
-                    .replace("'", "");
+                    .replace("'", "")
+                    .replace('۱', '1')
+                    .replace('۲', '2')
+                    .replace('۳', '3')
+                    .replace('۴', '4')
+                    .replace('۵', '5')
+                    .replace('۶', '6')
+                    .replace('۷', '7')
+                    .replace('۸', '8')
+                    .replace('۹', '9')
+                    .replace('۰', '0')
+                    .replace("\r", "")
+                    .replace("\n", "");
 
             if (criteria.length() > 0) {
                 Collection<WhereCondition> allConditions = Queriable.create(criteria.split(" "))

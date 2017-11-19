@@ -8,6 +8,7 @@ import com.example.arcana.rahansazeh.migration.migrations.MigrationV3AddExternal
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV4TruncateProjectCache;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV5CreateVehicleAndVehicleType;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV6CreateOutgoingRecordTable;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV7CreateOutgoingPassengerRecord;
 import com.example.arcana.rahansazeh.model.DaoMaster;
 
 import org.greenrobot.greendao.database.Database;
@@ -51,6 +52,7 @@ public class DatabaseUpgradeHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV4TruncateProjectCache());
         migrations.add(new MigrationV5CreateVehicleAndVehicleType());
         migrations.add(new MigrationV6CreateOutgoingRecordTable());
+        migrations.add(new MigrationV7CreateOutgoingPassengerRecord());
 
         // Sorting just to be safe, in case other people add migrations in the wrong order.
         Comparator<Migration> migrationComparator = new Comparator<Migration>() {
