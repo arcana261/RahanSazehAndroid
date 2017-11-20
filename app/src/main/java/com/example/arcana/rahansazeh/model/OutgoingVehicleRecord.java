@@ -51,6 +51,11 @@ public class OutgoingVehicleRecord {
     private int departuerTimeMinute;
     private int departureTimeSecond;
 
+    private int loadPassengerCount;
+    private int unloadPassengerCount;
+
+    private boolean hasSelectedHeadTerminal;
+
     @NotNull
     private String licensePlate;
 
@@ -65,13 +70,11 @@ public class OutgoingVehicleRecord {
     @Generated(hash = 2071848765)
     private transient OutgoingVehicleRecordDao myDao;
 
-    @Generated(hash = 1146171049)
-    public OutgoingVehicleRecord(Long id, @NotNull Long userId, boolean hasLoaded,
-            boolean hasUnLoaded, @NotNull Long projectId,
-            @NotNull Long projectLineId, int year, int month, int day,
-            boolean hasArrivalTime, int arrivalTimeHour, int arrivalTimeMinute,
-            int arrivalTimeSecond, boolean hasDepartureTime, int departureTimeHour,
-            int departuerTimeMinute, int departureTimeSecond,
+    @Generated(hash = 1873093936)
+    public OutgoingVehicleRecord(Long id, @NotNull Long userId, boolean hasLoaded, boolean hasUnLoaded, @NotNull Long projectId,
+            @NotNull Long projectLineId, int year, int month, int day, boolean hasArrivalTime, int arrivalTimeHour,
+            int arrivalTimeMinute, int arrivalTimeSecond, boolean hasDepartureTime, int departureTimeHour, int departuerTimeMinute,
+            int departureTimeSecond, int loadPassengerCount, int unloadPassengerCount, boolean hasSelectedHeadTerminal,
             @NotNull String licensePlate, @NotNull String vehicleType) {
         this.id = id;
         this.userId = userId;
@@ -90,6 +93,9 @@ public class OutgoingVehicleRecord {
         this.departureTimeHour = departureTimeHour;
         this.departuerTimeMinute = departuerTimeMinute;
         this.departureTimeSecond = departureTimeSecond;
+        this.loadPassengerCount = loadPassengerCount;
+        this.unloadPassengerCount = unloadPassengerCount;
+        this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
         this.licensePlate = licensePlate;
         this.vehicleType = vehicleType;
     }
@@ -393,6 +399,30 @@ public class OutgoingVehicleRecord {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
+    }
+
+    public int getLoadPassengerCount() {
+        return this.loadPassengerCount;
+    }
+
+    public void setLoadPassengerCount(int loadPassengerCount) {
+        this.loadPassengerCount = loadPassengerCount;
+    }
+
+    public int getUnloadPassengerCount() {
+        return this.unloadPassengerCount;
+    }
+
+    public void setUnloadPassengerCount(int unloadPassengerCount) {
+        this.unloadPassengerCount = unloadPassengerCount;
+    }
+
+    public boolean getHasSelectedHeadTerminal() {
+        return this.hasSelectedHeadTerminal;
+    }
+
+    public void setHasSelectedHeadTerminal(boolean hasSelectedHeadTerminal) {
+        this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
     }
 
     /** called by internal mechanisms, do not call yourself. */

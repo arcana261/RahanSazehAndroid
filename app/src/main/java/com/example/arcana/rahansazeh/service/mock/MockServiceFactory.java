@@ -1,5 +1,6 @@
 package com.example.arcana.rahansazeh.service.mock;
 
+import com.example.arcana.rahansazeh.service.DataEntryService;
 import com.example.arcana.rahansazeh.service.LoginService;
 import com.example.arcana.rahansazeh.service.ProjectListService;
 import com.example.arcana.rahansazeh.service.ServiceFactory;
@@ -29,5 +30,10 @@ public class MockServiceFactory implements ServiceFactory {
     @Override
     public VehicleService createVehicle() {
         return new MockVehicleService();
+    }
+
+    @Override
+    public DataEntryService createDataEntry() {
+        return new MockDataEntryService();
     }
 }

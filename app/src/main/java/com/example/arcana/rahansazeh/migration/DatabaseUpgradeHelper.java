@@ -2,6 +2,7 @@ package com.example.arcana.rahansazeh.migration;
 
 import android.content.Context;
 
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV10AddTerminalToOutgoingVehicle;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV1CreateUser;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV2CreateProjectAndProjectLine;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV3AddExternalIdToProjectAndProjectLine;
@@ -9,6 +10,8 @@ import com.example.arcana.rahansazeh.migration.migrations.MigrationV4TruncatePro
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV5CreateVehicleAndVehicleType;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV6CreateOutgoingRecordTable;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV7CreateOutgoingPassengerRecord;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV8AddLoadAndUnloadToOutgoingVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV9AddPrimaryKeyToOutgoingPassenger;
 import com.example.arcana.rahansazeh.model.DaoMaster;
 
 import org.greenrobot.greendao.database.Database;
@@ -53,6 +56,9 @@ public class DatabaseUpgradeHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV5CreateVehicleAndVehicleType());
         migrations.add(new MigrationV6CreateOutgoingRecordTable());
         migrations.add(new MigrationV7CreateOutgoingPassengerRecord());
+        migrations.add(new MigrationV8AddLoadAndUnloadToOutgoingVehicle());
+        migrations.add(new MigrationV9AddPrimaryKeyToOutgoingPassenger());
+        migrations.add(new MigrationV10AddTerminalToOutgoingVehicle());
 
         // Sorting just to be safe, in case other people add migrations in the wrong order.
         Comparator<Migration> migrationComparator = new Comparator<Migration>() {

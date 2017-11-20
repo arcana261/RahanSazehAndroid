@@ -1,6 +1,7 @@
 package com.example.arcana.rahansazeh.model;
 
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.ToOne;
 import org.greenrobot.greendao.annotation.Generated;
@@ -12,7 +13,9 @@ import org.greenrobot.greendao.DaoException;
 
 @Entity
 public class OutgoingPassengerRecord {
+    @Id(autoincrement = true)
     private Long id;
+
     @NotNull
     private Long userId;
 

@@ -6,24 +6,71 @@
     android:layout_height="match_parent"
     tools:context="com.example.arcana.rahansazeh.VerifyDataActivity">
 
-    <ScrollView
+    <TabHost
+        android:id="@+id/tabHost"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true">
+        android:layout_height="match_parent">
 
-        <ListView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/listRecords" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-    </ScrollView>
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btnVerify"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="تایید"
-        style="@style/Widget.AppCompat.Button.Colored"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/tabVehicleEntry">
+
+                    <ListView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="55dp"
+                        android:id="@+id/listVehicleRecords" />
+
+                    <Button
+                        android:id="@+id/btnVerifyVehicleRecords"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_alignParentBottom="true"
+                        android:text="تایید"
+                        android:onClick="onVerifyVehicleRecordsClicked"
+                        style="@style/Widget.AppCompat.Button.Colored"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/tabPassengerEntry">
+
+                    <ListView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="55dp"
+                        android:id="@+id/listPassengerRecords" />
+
+                    <Button
+                        android:id="@+id/btnVerifyPassengerRecords"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_alignParentBottom="true"
+                        android:text="تایید"
+                        android:onClick="onBtnVerifyPassengerRecordsClicked"
+                        style="@style/Widget.AppCompat.Button.Colored"/>
+
+                </RelativeLayout>
+
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
 
 </RelativeLayout>

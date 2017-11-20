@@ -9,4 +9,5 @@ public interface ServiceFactory {
     ProjectListService createProjectList();
     VehicleTypeService createVehicleType();
     VehicleService createVehicle();
+    DataEntryService createDataEntry();
 }

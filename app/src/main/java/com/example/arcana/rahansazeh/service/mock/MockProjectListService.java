@@ -19,9 +19,7 @@ public class MockProjectListService extends BaseMockService implements ProjectLi
         ServiceProjectLine line = new ServiceProjectLine(
                 1, "293", "میدان فاطمی", "پایانه سازمان آب");
         ServiceProject project = new ServiceProject(1,
-                "ساماندهی سامانه تاکسی‌رانی تهران" + "\n" +
-                        "ساماندهی میدان کتاب - منطقه ۲ تهران" + "\n" +
-                        "طرح جامع حمل و نقل ترافیک سیرجان");
+                "ساماندهی سامانه تاکسی‌رانی تهران");
         project.addLine(line);
 
         ArrayList<ServiceProject> result = new ArrayList<>();

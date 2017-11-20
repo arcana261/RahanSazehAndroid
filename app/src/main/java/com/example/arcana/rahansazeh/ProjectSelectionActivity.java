@@ -444,7 +444,7 @@ public class ProjectSelectionActivity extends BaseActivity {
         DataEntryActivity.Params params = new DataEntryActivity.Params(userName,
                 selectedProject.getId(), selectedLine.getId(),
                 hasSelectedHead, selectedYear, selectedMonth,
-                selectedDay);
+                selectedDay, hasSelectedHead);
         intent.putExtra("params", params);
 
         startActivity(intent);

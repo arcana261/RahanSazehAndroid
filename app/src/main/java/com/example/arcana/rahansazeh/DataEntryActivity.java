@@ -1,6 +1,7 @@
 package com.example.arcana.rahansazeh;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -81,10 +83,9 @@ public class DataEntryActivity extends BaseActivity {
 
     private VehicleTypeAdapter vehicleTypeAdapter;
     private TimeRangeAdapter timeRangeAdapter;
-    private TextView txtPassengerCount;
-    private SeekBar seekPassengerCount;
     private Spinner spinTimeRange;
     private Button btnSavePassenger;
+    private EditText txtPassengerCount;
 
     public static class Params implements Serializable {
         private String userName;
@@ -94,12 +95,13 @@ public class DataEntryActivity extends BaseActivity {
         private int year;
         private int month;
         private int day;
+        private boolean hasSelectedHeadTerminal;
 
         private Project project;
         private ProjectLine projectLine;
 
         public Params(String userName, Long projectId, Long lineId, boolean selectedHead,
-                      int year, int month, int day) {
+                      int year, int month, int day, boolean hasSelectedHeadTerminal) {
             this.userName = userName;
             this.projectId = projectId;
             this.lineId = lineId;
@@ -107,6 +109,7 @@ public class DataEntryActivity extends BaseActivity {
             this.year = year;
             this.month = month;
             this.setDay(day);
+            this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
         }
 
         public String getUserName() {
@@ -242,6 +245,26 @@ public class DataEntryActivity extends BaseActivity {
         */
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.menuVerify:
+                VerifyDataActivity.Params verifyParams = new VerifyDataActivity.Params(
+                        params.getUserName(), params.getProjectId(),
+                        params.getLineId());
+
+                Intent intent = new Intent(this, VerifyDataActivity.class);
+                intent.putExtra("params", verifyParams);
+
+                startActivity(intent);
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private static class RefreshDataResult {
@@ -412,6 +435,10 @@ public class DataEntryActivity extends BaseActivity {
                 for (Vehicle toRemove : removeList) {
                     vehicleDao.delete(toRemove);
                 }
+
+                vehicleTypeAdapter =
+                        new VehicleTypeAdapter(DataEntryActivity.this, getDaoSession());
+                spinTaxiType.setAdapter(vehicleTypeAdapter);
             }
         }
     }
@@ -451,9 +478,8 @@ public class DataEntryActivity extends BaseActivity {
         btnSelectDepartureTime = findViewById(R.id.btnSelectDepartureTime);
         tabHost = findViewById(R.id.tabHost);
         spinTimeRange = findViewById(R.id.spinTimeRange);
-        txtPassengerCount = findViewById(R.id.txtPassengerCount);
-        seekPassengerCount = findViewById(R.id.seekPassengerCount);
         btnSavePassenger = findViewById(R.id.btnSavePassenger);
+        txtPassengerCount = findViewById(R.id.txtPassengerCount);
 
         tabHost.setup();
 
@@ -477,23 +503,6 @@ public class DataEntryActivity extends BaseActivity {
 
         timeRangeAdapter = new TimeRangeAdapter(this, timeRangeList);
         spinTimeRange.setAdapter(timeRangeAdapter);
-
-        seekPassengerCount.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                txtPassengerCount.setText("" + progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
 
         final LicensePlateAdapter licensePlateAdapter =
                 new LicensePlateAdapter(this, getDaoSession());
@@ -613,42 +622,19 @@ public class DataEntryActivity extends BaseActivity {
                             break;
                         case ' ':
                         case 'ت':
+                        case '0':
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                        case '7':
+                        case '8':
+                        case '9':
                             break;
                         default:
                             s.replace(i, i + 1, "");
-                    }
-                }
-
-                if (s.length() <= 2) {
-                    for (int i = 0; i < s.length(); i++) {
-                        if (!Character.isDigit(s.charAt(i))) {
-                            s.replace(i, i + 1, "");
-                            i = i - 1;
-                        }
-                    }
-                }
-                else if (s.length() <= 5) {
-                    if (s.charAt(0) != ' ' || s.charAt(1) != 'ت' || s.charAt(2) != ' ') {
-                        s.replace(0, 3, "");
-                    }
-                    else {
-                        for (int i = 3; i < s.length(); i++) {
-                            if (!Character.isDigit(s.charAt(i))) {
-                                s.replace(i, i + 1, "");
-                                i = i - 1;
-                            }
-                        }
-                    }
-                }
-                else {
-                    int i = 0;
-                    while (i < s.length() && s.charAt(i) != ' ') {
-                        if (!Character.isDigit(s.charAt(i))) {
-                            s.replace(i, i + 1, "");
-                            i = i - 1;
-                        }
-
-                        i = i + 1;
                     }
                 }
             }
@@ -746,6 +732,37 @@ public class DataEntryActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
     }
 
+    public int getPassengerCount() {
+        try {
+            int ret = Integer.parseInt(txtPassengerCount.getText().toString());
+
+            if (ret < 0) {
+                return 0;
+            }
+
+            return ret;
+        }
+        catch (Exception err) {
+            return 0;
+        }
+    }
+
+    public void setPassengerCount(int value) {
+        if (value < 0) {
+            value = 0;
+        }
+
+        txtPassengerCount.setText("" + value);
+    }
+
+    public void onBtnIncrementPassengerCountClicked(View view) {
+        setPassengerCount(getPassengerCount() + 1);
+    }
+
+    public void onBtnDecrementPassengerCountClicked(View view) {
+        setPassengerCount(getPassengerCount() - 1);
+    }
+
     public void onSavePassengerClicked(View view) {
         if (spinTimeRange.getSelectedItemPosition() < 1) {
             btnSavePassenger.setError("بازه زمانی را انتخاب کنید");
@@ -770,7 +787,7 @@ public class DataEntryActivity extends BaseActivity {
                     params.getMonth(), params.getDay(),
                     range.getStartHour(), range.getStartMinute(),
                     range.getEndHour(), range.getEndMinute(),
-                    seekPassengerCount.getProgress()
+                    getPassengerCount()
             );
 
             OutgoingPassengerRecordDao passengerRecordDao =
@@ -783,8 +800,8 @@ public class DataEntryActivity extends BaseActivity {
 
     public void onSaveClicked(View view) {
         TextValidator[] allValidators = new TextValidator[] {
-            loadPassengerCountValidator,
-            unloadPassengerCountValidator
+                loadPassengerCountValidator,
+                unloadPassengerCountValidator
         };
 
         boolean isValid = true;
@@ -793,6 +810,14 @@ public class DataEntryActivity extends BaseActivity {
             if (!validator.isValid()) {
                 isValid = false;
             }
+        }
+
+        if (!txtLicensePlate.getText().toString().matches("^\\d{3} ت \\d{2}")) {
+            txtLicensePlate.setError("پلاک را به صورت صحیح وارد کنید");
+            isValid = false;
+        }
+        else {
+            txtLicensePlate.setError(null);
         }
 
         if (!btnTaxiLoad.isChecked() && !btnTaxiUnLoad.isChecked()) {
@@ -860,6 +885,33 @@ public class DataEntryActivity extends BaseActivity {
                                 }
                             }).execute().toArray(new Integer[0]) : defaultTimes;
 
+            int loadPassenger = 0;
+            int unloadPassenger = 0;
+
+            try {
+                if (loadPassengersCount.isEnabled()) {
+                    loadPassenger = Integer.parseInt(loadPassengersCount.getText().toString());
+                }
+                else {
+                    loadPassenger = 0;
+                }
+            }
+            catch (Exception err) {
+                loadPassenger = 0;
+            }
+
+            try {
+                if (unloadPassengersCount.isEnabled()) {
+                    unloadPassenger = Integer.parseInt(unloadPassengersCount.getText().toString());
+                }
+                else {
+                    unloadPassenger = 0;
+                }
+            }
+            catch (Exception err) {
+                unloadPassenger = 0;
+            }
+
             OutgoingVehicleRecord record = new OutgoingVehicleRecord(
                     null, user.getId(), btnTaxiLoad.isChecked(),
                     btnTaxiUnLoad.isChecked(), params.getProjectId(),
@@ -867,6 +919,7 @@ public class DataEntryActivity extends BaseActivity {
                     params.getDay(), txtArrivalTime.isEnabled(), arrivalTime[0],
                     arrivalTime[1], arrivalTime[2], txtDepartureTime.isEnabled(),
                     departureTime[0], departureTime[1], departureTime[2],
+                    loadPassenger, unloadPassenger, params.hasSelectedHeadTerminal,
                     txtLicensePlate.getText().toString().replace(" ", "") + "00",
                     vehicleTypeAdapter.getItem(spinTaxiType.getSelectedItemPosition()).getTitle()
             );
