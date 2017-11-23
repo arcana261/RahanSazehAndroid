@@ -26,7 +26,7 @@ public class Project {
 
     @NotNull
     @Index(unique = true)
-    private Long externalId;
+    private String externalId;
 
     @ToMany(referencedJoinProperty = "projectId")
     @OrderBy("title ASC")
@@ -40,15 +40,15 @@ public class Project {
     @Generated(hash = 1378029107)
     private transient ProjectDao myDao;
 
-    @Generated(hash = 447580162)
-    public Project(Long id, @NotNull String title, @NotNull Long externalId) {
+    @Generated(hash = 1767516619)
+    public Project() {
+    }
+
+    @Generated(hash = 101070555)
+    public Project(Long id, @NotNull String title, @NotNull String externalId) {
         this.id = id;
         this.title = title;
         this.externalId = externalId;
-    }
-
-    @Generated(hash = 1767516619)
-    public Project() {
     }
 
     public Long getId() {
@@ -132,11 +132,11 @@ public class Project {
         myDao.update(this);
     }
 
-    public Long getExternalId() {
+    public String getExternalId() {
         return this.externalId;
     }
 
-    public void setExternalId(Long externalId) {
+    public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
 

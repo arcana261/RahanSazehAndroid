@@ -41,7 +41,7 @@ public class ProjectLine {
 
     @NotNull
     @Index(unique = true)
-    private Long externalId;
+    private String externalId;
 
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
@@ -51,19 +51,19 @@ public class ProjectLine {
     @Generated(hash = 1330246484)
     private transient ProjectLineDao myDao;
 
-    @Generated(hash = 2258333)
+    @Generated(hash = 1584299589)
+    public ProjectLine() {
+    }
+
+    @Generated(hash = 799850192)
     public ProjectLine(Long id, @NotNull String title, @NotNull Long projectId, @NotNull String head,
-            @NotNull String tail, @NotNull Long externalId) {
+            @NotNull String tail, @NotNull String externalId) {
         this.id = id;
         this.title = title;
         this.projectId = projectId;
         this.head = head;
         this.tail = tail;
         this.externalId = externalId;
-    }
-
-    @Generated(hash = 1584299589)
-    public ProjectLine() {
     }
 
     public Long getId() {
@@ -206,11 +206,11 @@ public class ProjectLine {
         vehicles = null;
     }
 
-    public Long getExternalId() {
+    public String getExternalId() {
         return this.externalId;
     }
 
-    public void setExternalId(Long externalId) {
+    public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
 

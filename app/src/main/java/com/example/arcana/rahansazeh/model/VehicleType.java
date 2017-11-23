@@ -21,17 +21,17 @@ public class VehicleType {
 
     @NotNull
     @Index(unique = true)
-    private Long externalId;
-
-    @Generated(hash = 1249135248)
-    public VehicleType(Long id, @NotNull String title, @NotNull Long externalId) {
-        this.id = id;
-        this.title = title;
-        this.externalId = externalId;
-    }
+    private String externalId;
 
     @Generated(hash = 1440934529)
     public VehicleType() {
+    }
+
+    @Generated(hash = 226154725)
+    public VehicleType(Long id, @NotNull String title, @NotNull String externalId) {
+        this.id = id;
+        this.title = title;
+        this.externalId = externalId;
     }
 
     public Long getId() {
@@ -50,11 +50,11 @@ public class VehicleType {
         this.title = title;
     }
 
-    public Long getExternalId() {
+    public String getExternalId() {
         return this.externalId;
     }
 
-    public void setExternalId(Long externalId) {
+    public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
 }

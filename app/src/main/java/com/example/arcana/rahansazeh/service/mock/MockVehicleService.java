@@ -12,22 +12,22 @@ import java.util.List;
 
 public class MockVehicleService extends BaseMockService implements VehicleService {
     @Override
-    public List<ServiceVehicle> getVehicles(String userName, long projectLineId) throws Exception {
+    public List<ServiceVehicle> getVehicles(String userName, String projectLineId) throws Exception {
         sleep();
 
         ArrayList<ServiceVehicle> result = new ArrayList<>();
 
-        result.add(new ServiceVehicle(1l,
+        result.add(new ServiceVehicle("1",
                 23, 'ت', 764,
-                10, 1l ));
+                10, "1" ));
 
-        result.add(new ServiceVehicle(2l,
+        result.add(new ServiceVehicle("2",
                 46, 'ت', 234,
-                10, 1l ));
+                10, "2" ));
 
-        result.add(new ServiceVehicle(1l,
+        result.add(new ServiceVehicle("3",
                 80, 'ت', 912,
-                10, 1l ));
+                10, "1" ));
 
         return result;
     }

@@ -117,8 +117,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                 .filter(new Predicate<ProjectLine>() {
                                     @Override
                                     public boolean predict(ProjectLine projectLine) {
-                                        return projectLine.getExternalId()
-                                                == serviceProjectLine.getId();
+                                        return projectLine.getExternalId().equals(
+                                                serviceProjectLine.getId());
                                     }
                                 }).firstOrNull().execute();
 
@@ -151,8 +151,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                             .exists(new Predicate<ServiceProjectLine>() {
                                                 @Override
                                                 public boolean predict(ServiceProjectLine serviceProjectLine) {
-                                                    return projectLine.getExternalId() ==
-                                                            serviceProjectLine.getId();
+                                                    return projectLine.getExternalId().equals(
+                                                            serviceProjectLine.getId());
                                                 }
                                             }).execute();
                                 }
@@ -171,8 +171,8 @@ public class ProjectSelectionActivity extends BaseActivity {
                                         .exists(new Predicate<ServiceProject>() {
                                             @Override
                                             public boolean predict(ServiceProject serviceProject) {
-                                                return project.getExternalId() ==
-                                                        serviceProject.getId();
+                                                return project.getExternalId().equals(
+                                                        serviceProject.getId());
                                             }
                                         }).execute();
                             }

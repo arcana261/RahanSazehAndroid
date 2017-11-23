@@ -48,7 +48,7 @@ public class OutgoingVehicleRecord {
 
     private boolean hasDepartureTime;
     private int departureTimeHour;
-    private int departuerTimeMinute;
+    private int departureTimeMinute;
     private int departureTimeSecond;
 
     private int loadPassengerCount;
@@ -70,11 +70,16 @@ public class OutgoingVehicleRecord {
     @Generated(hash = 2071848765)
     private transient OutgoingVehicleRecordDao myDao;
 
-    @Generated(hash = 1873093936)
-    public OutgoingVehicleRecord(Long id, @NotNull Long userId, boolean hasLoaded, boolean hasUnLoaded, @NotNull Long projectId,
-            @NotNull Long projectLineId, int year, int month, int day, boolean hasArrivalTime, int arrivalTimeHour,
-            int arrivalTimeMinute, int arrivalTimeSecond, boolean hasDepartureTime, int departureTimeHour, int departuerTimeMinute,
-            int departureTimeSecond, int loadPassengerCount, int unloadPassengerCount, boolean hasSelectedHeadTerminal,
+    @Generated(hash = 1056058307)
+    public OutgoingVehicleRecord() {
+    }
+
+    @Generated(hash = 129961007)
+    public OutgoingVehicleRecord(Long id, @NotNull Long userId, boolean hasLoaded, boolean hasUnLoaded,
+            @NotNull Long projectId, @NotNull Long projectLineId, int year, int month, int day,
+            boolean hasArrivalTime, int arrivalTimeHour, int arrivalTimeMinute, int arrivalTimeSecond,
+            boolean hasDepartureTime, int departureTimeHour, int departureTimeMinute, int departureTimeSecond,
+            int loadPassengerCount, int unloadPassengerCount, boolean hasSelectedHeadTerminal,
             @NotNull String licensePlate, @NotNull String vehicleType) {
         this.id = id;
         this.userId = userId;
@@ -91,17 +96,13 @@ public class OutgoingVehicleRecord {
         this.arrivalTimeSecond = arrivalTimeSecond;
         this.hasDepartureTime = hasDepartureTime;
         this.departureTimeHour = departureTimeHour;
-        this.departuerTimeMinute = departuerTimeMinute;
+        this.departureTimeMinute = departureTimeMinute;
         this.departureTimeSecond = departureTimeSecond;
         this.loadPassengerCount = loadPassengerCount;
         this.unloadPassengerCount = unloadPassengerCount;
         this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
         this.licensePlate = licensePlate;
         this.vehicleType = vehicleType;
-    }
-
-    @Generated(hash = 1056058307)
-    public OutgoingVehicleRecord() {
     }
 
     public Long getId() {
@@ -224,12 +225,12 @@ public class OutgoingVehicleRecord {
         this.departureTimeHour = departureTimeHour;
     }
 
-    public int getDepartuerTimeMinute() {
-        return this.departuerTimeMinute;
+    public int getDepartureTimeMinute() {
+        return this.departureTimeMinute;
     }
 
-    public void setDepartuerTimeMinute(int departuerTimeMinute) {
-        this.departuerTimeMinute = departuerTimeMinute;
+    public void setDepartureTimeMinute(int departureTimeMinute) {
+        this.departureTimeMinute = departureTimeMinute;
     }
 
     public int getDepartureTimeSecond() {

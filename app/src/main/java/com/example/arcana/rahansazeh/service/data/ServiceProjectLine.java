@@ -5,12 +5,12 @@ package com.example.arcana.rahansazeh.service.data;
  */
 
 public class ServiceProjectLine {
-    private long id;
+    private String id;
     private String title;
     private String head;
     private String tail;
 
-    public ServiceProjectLine(long id, String title, String head, String tail) {
+    public ServiceProjectLine(String id, String title, String head, String tail) {
         this.id = id;
         this.title = title;
         this.head = head;
@@ -41,11 +41,11 @@ public class ServiceProjectLine {
         this.tail = tail;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 }

@@ -12,16 +12,16 @@ import java.util.List;
 
 public class MockVehicleTypeService extends BaseMockService implements VehicleTypeService {
     @Override
-    public List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId) throws Exception {
+    public List<ServiceVehicleType> getVehicleTypes(String userName, String projectLineId) throws Exception {
         sleep();
 
         ArrayList<ServiceVehicleType> vehicleTypeList = new ArrayList<>();
 
-        vehicleTypeList.add(new ServiceVehicleType(1l, "ون"));
-        vehicleTypeList.add(new ServiceVehicleType(2l,"پژو (۴۰۵-روآ-آردی)"));
-        vehicleTypeList.add(new ServiceVehicleType(3l,"سمند"));
-        vehicleTypeList.add(new ServiceVehicleType(4l,"پیکان"));
-        vehicleTypeList.add(new ServiceVehicleType(5l,"سایر"));
+        vehicleTypeList.add(new ServiceVehicleType("1", "ون"));
+        vehicleTypeList.add(new ServiceVehicleType("2","پژو (۴۰۵-روآ-آردی)"));
+        vehicleTypeList.add(new ServiceVehicleType("3","سمند"));
+        vehicleTypeList.add(new ServiceVehicleType("4","پیکان"));
+        vehicleTypeList.add(new ServiceVehicleType("5","سایر"));
 
         return vehicleTypeList;
     }

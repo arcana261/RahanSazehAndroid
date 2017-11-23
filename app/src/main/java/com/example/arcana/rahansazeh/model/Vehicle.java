@@ -37,7 +37,7 @@ public class Vehicle {
     private ProjectLine projectLine;
 
     @Index
-    private Long externalId;
+    private String externalId;
 
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
@@ -47,9 +47,10 @@ public class Vehicle {
     @Generated(hash = 900796925)
     private transient VehicleDao myDao;
 
-    @Generated(hash = 668040691)
-    public Vehicle(Long id, @NotNull Long vehicleTypeId, @NotNull LicensePlate license,
-            @NotNull Long projectLineId, Long externalId) {
+    @Generated(hash = 2108133977)
+    public Vehicle(Long id, @NotNull Long vehicleTypeId,
+            @NotNull LicensePlate license, @NotNull Long projectLineId,
+            String externalId) {
         this.id = id;
         this.vehicleTypeId = vehicleTypeId;
         this.license = license;
@@ -91,6 +92,14 @@ public class Vehicle {
 
     public void setProjectLineId(Long projectLineId) {
         this.projectLineId = projectLineId;
+    }
+
+    public String getExternalId() {
+        return this.externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     @Generated(hash = 751547298)
@@ -201,14 +210,6 @@ public class Vehicle {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
-    }
-
-    public Long getExternalId() {
-        return this.externalId;
-    }
-
-    public void setExternalId(Long externalId) {
-        this.externalId = externalId;
     }
 
     /** called by internal mechanisms, do not call yourself. */

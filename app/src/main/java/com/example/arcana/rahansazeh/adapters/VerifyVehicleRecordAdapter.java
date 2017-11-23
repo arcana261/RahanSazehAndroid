@@ -13,7 +13,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.QuickContactBadge;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
@@ -159,7 +158,7 @@ public class VerifyVehicleRecordAdapter extends BaseAdapter implements Filterabl
                         "" +
                         NumberPadder.formatNumber(record.getDepartureTimeHour(), 2) +
                         ":" +
-                        NumberPadder.formatNumber(record.getDepartuerTimeMinute(), 2) +
+                        NumberPadder.formatNumber(record.getDepartureTimeMinute(), 2) +
                         ":" +
                         NumberPadder.formatNumber(record.getDepartureTimeSecond(), 2)
                         : "";

@@ -11,15 +11,12 @@ import com.example.arcana.rahansazeh.service.data.ServiceProject;
 import com.example.arcana.rahansazeh.service.data.ServiceProjectLine;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicle;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicleType;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ServiceConfigurationError;
 
 /**
  * Created by arcana on 11/23/17.
@@ -52,7 +49,7 @@ public class RahanSazehApiClient extends BaseClient
     }
 
     @Override
-    public List<ServiceVehicle> getVehicles(String userName, long projectLineId) throws Exception {
+    public List<ServiceVehicle> getVehicles(String userName, String projectLineId) throws Exception {
         ArrayList<ServiceVehicle> result = new ArrayList<>();
 
         JSONArray response = getArray("/vehicle/" + projectLineId);
@@ -60,12 +57,13 @@ public class RahanSazehApiClient extends BaseClient
         for (int i = 0; i < response.length(); i++) {
             JSONObject responseVehicle = response.getJSONObject(i);
 
-            Long id = responseVehicle.getLong("id");
+            String id = responseVehicle.getString("id");
             int licensePlateLeft = responseVehicle.getInt("licensePlateLeft");
             int licensePlateRight = responseVehicle.getInt("licensePlateRight");
             int licensePlateNationalCode = responseVehicle.getInt("licensePlateNationalCode");
             String licensePlateType = responseVehicle.getString("licensePlateType");
-            Long vehicleTypeId = responseVehicle.getLong("vehicleTypeId");
+            JSONObject vehicleType = responseVehicle.getJSONObject("vehicleType");
+            String vehicleTypeId = vehicleType.getString("id");
 
             result.add(new ServiceVehicle(id, licensePlateLeft, licensePlateType.charAt(0),
                     licensePlateRight, licensePlateNationalCode,
@@ -84,7 +82,7 @@ public class RahanSazehApiClient extends BaseClient
         for (int i = 0; i < response.length(); i++) {
             JSONObject responseProject = response.getJSONObject(i);
 
-            Long id = responseProject.getLong("id");
+            String id = responseProject.getString("id");
             String title = responseProject.getString("title");
 
             ServiceProject project = new ServiceProject(id, title);
@@ -94,7 +92,7 @@ public class RahanSazehApiClient extends BaseClient
             for (int j = 0; j < responseLines.length(); j++) {
                 JSONObject responseLine = responseLines.getJSONObject(j);
 
-                Long lineId = responseLine.getLong("id");
+                String lineId = responseLine.getString("id");
                 String lineTitle = responseLine.getString("title");
                 String head = responseLine.getString("head");
                 String tail = responseLine.getString("tail");
@@ -109,7 +107,7 @@ public class RahanSazehApiClient extends BaseClient
     }
 
     @Override
-    public List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId) throws Exception {
+    public List<ServiceVehicleType> getVehicleTypes(String userName, String projectLineId) throws Exception {
         ArrayList<ServiceVehicleType> result = new ArrayList<>();
 
         JSONArray response = getArray("/vehicleType/" + projectLineId);
@@ -117,7 +115,7 @@ public class RahanSazehApiClient extends BaseClient
         for (int i = 0; i < response.length(); i++) {
             JSONObject responseVehicleType = response.getJSONObject(i);
 
-            Long id = responseVehicleType.getLong("id");
+            String id = responseVehicleType.getString("id");
             String title = responseVehicleType.getString("title");
 
             result.add(new ServiceVehicleType(id, title));
@@ -134,8 +132,8 @@ public class RahanSazehApiClient extends BaseClient
         params.put("userName", record.getUser().getNationalCode());
         params.put("hasLoaded", record.getHasLoaded());
         params.put("hasUnLoaded", record.getHasUnLoaded());
-        params.put("projectId", record.getProjectId());
-        params.put("projectLineId", record.getProjectLineId());
+        params.put("projectId", record.getProject().getExternalId());
+        params.put("projectLineId", record.getProjectLine().getExternalId());
         params.put("year", record.getYear());
         params.put("month", record.getMonth());
         params.put("day", record.getDay());
@@ -145,7 +143,7 @@ public class RahanSazehApiClient extends BaseClient
         params.put("arrivalTimeSecond", record.getArrivalTimeSecond());
         params.put("hasDepartureTime", record.getHasDepartureTime());
         params.put("departureTimeHour", record.getDepartureTimeHour());
-        params.put("departureTimeMinute", record.getDepartuerTimeMinute());
+        params.put("departureTimeMinute", record.getDepartureTimeMinute());
         params.put("departureTimeSecond", record.getDepartureTimeSecond());
         params.put("loadPassengerCount", record.getLoadPassengerCount());
         params.put("unloadPassengerCount", record.getUnloadPassengerCount());
@@ -160,8 +158,8 @@ public class RahanSazehApiClient extends BaseClient
 
         params.put("id", record.getId());
         params.put("userName", record.getUser().getNationalCode());
-        params.put("projectId", record.getProjectId());
-        params.put("projectLineId", record.getProjectLineId());
+        params.put("projectId", record.getProject().getExternalId());
+        params.put("projectLineId", record.getProjectLine().getExternalId());
         params.put("year", record.getYear());
         params.put("month", record.getMonth());
         params.put("day", record.getDay());

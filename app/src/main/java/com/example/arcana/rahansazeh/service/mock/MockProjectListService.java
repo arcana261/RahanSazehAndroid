@@ -17,8 +17,8 @@ public class MockProjectListService extends BaseMockService implements ProjectLi
         sleep();
 
         ServiceProjectLine line = new ServiceProjectLine(
-                1, "293", "میدان فاطمی", "پایانه سازمان آب");
-        ServiceProject project = new ServiceProject(1,
+                "1", "293", "میدان فاطمی", "پایانه سازمان آب");
+        ServiceProject project = new ServiceProject("1",
                 "ساماندهی سامانه تاکسی‌رانی تهران");
         project.addLine(line);
 

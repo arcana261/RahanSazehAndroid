@@ -5,16 +5,16 @@ package com.example.arcana.rahansazeh.service.data;
  */
 
 public class ServiceVehicle {
-    private Long id;
+    private String id;
     private int licensePlateLeft;
     private char licensePlateType;
     private int licensePlateRight;
     private int licensePlateNationalCode;
-    private Long vehicleTypeId;
+    private String vehicleTypeId;
 
-    public ServiceVehicle(Long id, int licensePlateLeft, char licensePlateType,
+    public ServiceVehicle(String id, int licensePlateLeft, char licensePlateType,
                           int licensePlateRight, int licensePlateNationalCode,
-                          Long vehicleTypeId) {
+                          String vehicleTypeId) {
         this.id = id;
         this.licensePlateLeft = licensePlateLeft;
         this.licensePlateType = licensePlateType;
@@ -23,11 +23,11 @@ public class ServiceVehicle {
         this.vehicleTypeId = vehicleTypeId;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -63,11 +63,11 @@ public class ServiceVehicle {
         this.licensePlateNationalCode = licensePlateNationalCode;
     }
 
-    public Long getVehicleTypeId() {
+    public String getVehicleTypeId() {
         return vehicleTypeId;
     }
 
-    public void setVehicleTypeId(Long vehicleTypeId) {
+    public void setVehicleTypeId(String vehicleTypeId) {
         this.vehicleTypeId = vehicleTypeId;
     }
 }

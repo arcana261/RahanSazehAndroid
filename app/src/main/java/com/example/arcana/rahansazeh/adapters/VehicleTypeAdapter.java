@@ -30,7 +30,7 @@ public class VehicleTypeAdapter extends ArrayAdapter<VehicleType> {
 
         List<VehicleType> vehicleTypeList = vehicleTypeDao.queryBuilder().list();
         vehicleTypeList.add(0,
-                new VehicleType(1-1l, "انتخاب نوع خودرو", -1l));
+                new VehicleType(-1l, "انتخاب نوع خودرو", "-1"));
 
         return vehicleTypeList.toArray(new VehicleType[0]);
     }
