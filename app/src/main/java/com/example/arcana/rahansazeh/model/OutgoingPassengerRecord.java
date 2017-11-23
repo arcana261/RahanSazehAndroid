@@ -44,6 +44,9 @@ public class OutgoingPassengerRecord {
     private int finishMinute;
 
     private int passengerCount;
+
+    private boolean hasSelectedHeadTerminal;
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -51,11 +54,10 @@ public class OutgoingPassengerRecord {
     @Generated(hash = 278215829)
     private transient OutgoingPassengerRecordDao myDao;
 
-    @Generated(hash = 584775806)
-    public OutgoingPassengerRecord(Long id, @NotNull Long userId,
-            @NotNull Long projectId, @NotNull Long projectLineId, int year,
-            int month, int day, int startHour, int startMinute, int finishHour,
-            int finishMinute, int passengerCount) {
+    @Generated(hash = 238794336)
+    public OutgoingPassengerRecord(Long id, @NotNull Long userId, @NotNull Long projectId,
+            @NotNull Long projectLineId, int year, int month, int day, int startHour, int startMinute,
+            int finishHour, int finishMinute, int passengerCount, boolean hasSelectedHeadTerminal) {
         this.id = id;
         this.userId = userId;
         this.projectId = projectId;
@@ -68,6 +70,7 @@ public class OutgoingPassengerRecord {
         this.finishHour = finishHour;
         this.finishMinute = finishMinute;
         this.passengerCount = passengerCount;
+        this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
     }
 
     @Generated(hash = 937469481)
@@ -313,6 +316,14 @@ public class OutgoingPassengerRecord {
             throw new DaoException("Entity is detached from DAO context");
         }
         myDao.update(this);
+    }
+
+    public boolean getHasSelectedHeadTerminal() {
+        return this.hasSelectedHeadTerminal;
+    }
+
+    public void setHasSelectedHeadTerminal(boolean hasSelectedHeadTerminal) {
+        this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
     }
 
     /** called by internal mechanisms, do not call yourself. */

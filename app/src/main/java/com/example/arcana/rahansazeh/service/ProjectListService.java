@@ -9,5 +9,5 @@ import java.util.List;
  */
 
 public interface ProjectListService {
-    List<ServiceProject> getProjects(String userName);
+    List<ServiceProject> getProjects(String userName) throws Exception;
 }

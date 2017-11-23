@@ -48,7 +48,7 @@ public class VerifyDataActivity extends BaseActivity {
             this.records = records;
         }
 
-        protected abstract void processItem(RECORD item);
+        protected abstract void processItem(RECORD item) throws Exception;
 
         protected abstract void removeItem(RECORD item);
 
@@ -141,7 +141,7 @@ public class VerifyDataActivity extends BaseActivity {
         }
 
         @Override
-        protected void processItem(OutgoingPassengerRecord item) {
+        protected void processItem(OutgoingPassengerRecord item) throws Exception {
             service.addPassengerRecord(item);
         }
 
@@ -186,7 +186,7 @@ public class VerifyDataActivity extends BaseActivity {
         }
 
         @Override
-        protected void processItem(OutgoingVehicleRecord item) {
+        protected void processItem(OutgoingVehicleRecord item) throws Exception {
             service.addVehicleRecord(item);
         }
 

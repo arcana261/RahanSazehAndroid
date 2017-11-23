@@ -10,12 +10,12 @@ import com.example.arcana.rahansazeh.service.DataEntryService;
 
 public class MockDataEntryService extends BaseMockService implements DataEntryService {
     @Override
-    public void addVehicleRecord(OutgoingVehicleRecord record) {
+    public void addVehicleRecord(OutgoingVehicleRecord record) throws Exception {
         sleep();
     }
 
     @Override
-    public void addPassengerRecord(OutgoingPassengerRecord record) {
+    public void addPassengerRecord(OutgoingPassengerRecord record) throws Exception {
         sleep();
     }
 }

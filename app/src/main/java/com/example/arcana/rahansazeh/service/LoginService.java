@@ -5,5 +5,5 @@ package com.example.arcana.rahansazeh.service;
  */
 
 public interface LoginService {
-    boolean Login(String userName);
+    boolean Login(String userName) throws Exception;
 }

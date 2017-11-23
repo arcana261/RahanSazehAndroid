@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.example.arcana.rahansazeh.model.DaoSession;
 import com.example.arcana.rahansazeh.service.ServiceFactory;
+import com.example.arcana.rahansazeh.service.api.RahanSazehServiceFactory;
 import com.example.arcana.rahansazeh.service.mock.MockServiceFactory;
 
 /**
@@ -19,13 +20,15 @@ import com.example.arcana.rahansazeh.service.mock.MockServiceFactory;
 
 public class BaseActivity extends AppCompatActivity {
     private boolean backButtonEnabled;
+    private ServiceFactory serviceFactory;
 
     public BaseActivity() {
         this.backButtonEnabled = false;
+        this.serviceFactory = new RahanSazehServiceFactory();
     }
 
     protected ServiceFactory services() {
-        return new MockServiceFactory();
+        return serviceFactory;
     }
 
     protected String getStringResource(int resId) {

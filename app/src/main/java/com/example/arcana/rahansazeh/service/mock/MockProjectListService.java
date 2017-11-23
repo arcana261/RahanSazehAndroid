@@ -13,7 +13,7 @@ import java.util.List;
 
 public class MockProjectListService extends BaseMockService implements ProjectListService {
     @Override
-    public List<ServiceProject> getProjects(String userName) {
+    public List<ServiceProject> getProjects(String userName) throws Exception {
         sleep();
 
         ServiceProjectLine line = new ServiceProjectLine(

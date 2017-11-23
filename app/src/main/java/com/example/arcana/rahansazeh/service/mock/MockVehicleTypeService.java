@@ -12,7 +12,7 @@ import java.util.List;
 
 public class MockVehicleTypeService extends BaseMockService implements VehicleTypeService {
     @Override
-    public List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId) {
+    public List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId) throws Exception {
         sleep();
 
         ArrayList<ServiceVehicleType> vehicleTypeList = new ArrayList<>();

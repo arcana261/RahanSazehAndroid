@@ -3,6 +3,7 @@ package com.example.arcana.rahansazeh.migration;
 import android.content.Context;
 
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV10AddTerminalToOutgoingVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV11AddHasSelectedTerminalInPassengerRecordEntry;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV1CreateUser;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV2CreateProjectAndProjectLine;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV3AddExternalIdToProjectAndProjectLine;
@@ -59,6 +60,7 @@ public class DatabaseUpgradeHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV8AddLoadAndUnloadToOutgoingVehicle());
         migrations.add(new MigrationV9AddPrimaryKeyToOutgoingPassenger());
         migrations.add(new MigrationV10AddTerminalToOutgoingVehicle());
+        migrations.add(new MigrationV11AddHasSelectedTerminalInPassengerRecordEntry());
 
         // Sorting just to be safe, in case other people add migrations in the wrong order.
         Comparator<Migration> migrationComparator = new Comparator<Migration>() {

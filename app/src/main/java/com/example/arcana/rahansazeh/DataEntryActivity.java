@@ -787,7 +787,7 @@ public class DataEntryActivity extends BaseActivity {
                     params.getMonth(), params.getDay(),
                     range.getStartHour(), range.getStartMinute(),
                     range.getEndHour(), range.getEndMinute(),
-                    getPassengerCount()
+                    getPassengerCount(), params.hasSelectedHeadTerminal
             );
 
             OutgoingPassengerRecordDao passengerRecordDao =

@@ -24,10 +24,6 @@ public abstract class BaseMigration implements Migration {
                 columnName + "] " + columnType + " NOT NULL DEFAULT " + defaultValue);
     }
 
-    protected void addColumn(Database db, AbstractDao table, Property column, String columnType) {
-        addColumn(db, table.getTablename(), column.columnName, columnType);
-    }
-
     protected void addIndex(Database db, String tableName, boolean unique, String... columns) {
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE ");

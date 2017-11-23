@@ -8,6 +8,6 @@ import com.example.arcana.rahansazeh.model.OutgoingVehicleRecord;
  */
 
 public interface DataEntryService {
-    void addVehicleRecord(OutgoingVehicleRecord record);
-    void addPassengerRecord(OutgoingPassengerRecord record);
+    void addVehicleRecord(OutgoingVehicleRecord record) throws Exception;
+    void addPassengerRecord(OutgoingPassengerRecord record) throws Exception;
 }

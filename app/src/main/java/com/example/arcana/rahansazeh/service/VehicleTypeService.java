@@ -9,5 +9,5 @@ import java.util.List;
  */
 
 public interface VehicleTypeService {
-    List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId);
+    List<ServiceVehicleType> getVehicleTypes(String userName, long projectLineId) throws Exception;
 }
