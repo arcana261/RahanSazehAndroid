@@ -27,14 +27,15 @@ public class Vehicle {
 
     @NotNull
     @Convert(converter = LicensePlate.Converter.class, columnType = String.class)
+    @Index
     private LicensePlate license;
 
     @NotNull
     @Index
-    private Long projectLineId;
+    private Long projectId;
 
-    @ToOne(joinProperty = "projectLineId")
-    private ProjectLine projectLine;
+    @ToOne(joinProperty = "projectId")
+    private Project project;
 
     @Index
     private String externalId;
@@ -47,14 +48,13 @@ public class Vehicle {
     @Generated(hash = 900796925)
     private transient VehicleDao myDao;
 
-    @Generated(hash = 2108133977)
-    public Vehicle(Long id, @NotNull Long vehicleTypeId,
-            @NotNull LicensePlate license, @NotNull Long projectLineId,
+    @Generated(hash = 1321589710)
+    public Vehicle(Long id, @NotNull Long vehicleTypeId, @NotNull LicensePlate license, @NotNull Long projectId,
             String externalId) {
         this.id = id;
         this.vehicleTypeId = vehicleTypeId;
         this.license = license;
-        this.projectLineId = projectLineId;
+        this.projectId = projectId;
         this.externalId = externalId;
     }
 
@@ -86,12 +86,12 @@ public class Vehicle {
         this.license = license;
     }
 
-    public Long getProjectLineId() {
-        return this.projectLineId;
+    public Long getProjectId() {
+        return this.projectId;
     }
 
-    public void setProjectLineId(Long projectLineId) {
-        this.projectLineId = projectLineId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getExternalId() {
@@ -139,40 +139,39 @@ public class Vehicle {
         }
     }
 
-    @Generated(hash = 396317904)
-    private transient Long projectLine__resolvedKey;
+    @Generated(hash = 1005767482)
+    private transient Long project__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 801675444)
-    public ProjectLine getProjectLine() {
-        Long __key = this.projectLineId;
-        if (projectLine__resolvedKey == null
-                || !projectLine__resolvedKey.equals(__key)) {
+    @Generated(hash = 1654636707)
+    public Project getProject() {
+        Long __key = this.projectId;
+        if (project__resolvedKey == null || !project__resolvedKey.equals(__key)) {
             final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
-            ProjectLineDao targetDao = daoSession.getProjectLineDao();
-            ProjectLine projectLineNew = targetDao.load(__key);
+            ProjectDao targetDao = daoSession.getProjectDao();
+            Project projectNew = targetDao.load(__key);
             synchronized (this) {
-                projectLine = projectLineNew;
-                projectLine__resolvedKey = __key;
+                project = projectNew;
+                project__resolvedKey = __key;
             }
         }
-        return projectLine;
+        return project;
     }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1231955987)
-    public void setProjectLine(@NotNull ProjectLine projectLine) {
-        if (projectLine == null) {
+    @Generated(hash = 1207172963)
+    public void setProject(@NotNull Project project) {
+        if (project == null) {
             throw new DaoException(
-                    "To-one property 'projectLineId' has not-null constraint; cannot set to-one to null");
+                    "To-one property 'projectId' has not-null constraint; cannot set to-one to null");
         }
         synchronized (this) {
-            this.projectLine = projectLine;
-            projectLineId = projectLine.getId();
-            projectLine__resolvedKey = projectLineId;
+            this.project = project;
+            projectId = project.getId();
+            project__resolvedKey = projectId;
         }
     }
 

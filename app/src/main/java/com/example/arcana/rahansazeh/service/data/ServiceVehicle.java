@@ -11,16 +11,18 @@ public class ServiceVehicle {
     private int licensePlateRight;
     private int licensePlateNationalCode;
     private String vehicleTypeId;
+    private String projectId;
 
     public ServiceVehicle(String id, int licensePlateLeft, char licensePlateType,
                           int licensePlateRight, int licensePlateNationalCode,
-                          String vehicleTypeId) {
+                          String vehicleTypeId, String projectId) {
         this.id = id;
         this.licensePlateLeft = licensePlateLeft;
         this.licensePlateType = licensePlateType;
         this.licensePlateRight = licensePlateRight;
         this.licensePlateNationalCode = licensePlateNationalCode;
         this.vehicleTypeId = vehicleTypeId;
+        this.projectId = projectId;
     }
 
     public String getId() {

@@ -62,6 +62,8 @@ public class OutgoingVehicleRecord {
     @NotNull
     private String vehicleType;
 
+    private String clientId;
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -74,13 +76,13 @@ public class OutgoingVehicleRecord {
     public OutgoingVehicleRecord() {
     }
 
-    @Generated(hash = 129961007)
+    @Generated(hash = 1923793976)
     public OutgoingVehicleRecord(Long id, @NotNull Long userId, boolean hasLoaded, boolean hasUnLoaded,
             @NotNull Long projectId, @NotNull Long projectLineId, int year, int month, int day,
             boolean hasArrivalTime, int arrivalTimeHour, int arrivalTimeMinute, int arrivalTimeSecond,
             boolean hasDepartureTime, int departureTimeHour, int departureTimeMinute, int departureTimeSecond,
             int loadPassengerCount, int unloadPassengerCount, boolean hasSelectedHeadTerminal,
-            @NotNull String licensePlate, @NotNull String vehicleType) {
+            @NotNull String licensePlate, @NotNull String vehicleType, String clientId) {
         this.id = id;
         this.userId = userId;
         this.hasLoaded = hasLoaded;
@@ -103,6 +105,7 @@ public class OutgoingVehicleRecord {
         this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
         this.licensePlate = licensePlate;
         this.vehicleType = vehicleType;
+        this.clientId = clientId;
     }
 
     public Long getId() {
@@ -424,6 +427,14 @@ public class OutgoingVehicleRecord {
 
     public void setHasSelectedHeadTerminal(boolean hasSelectedHeadTerminal) {
         this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
+    }
+
+    public String getClientId() {
+        return this.clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     /** called by internal mechanisms, do not call yourself. */

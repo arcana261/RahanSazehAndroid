@@ -36,9 +36,6 @@ public class ProjectLine {
     @NotNull
     private String tail;
 
-    @ToMany(referencedJoinProperty = "projectLineId")
-    private List<Vehicle> vehicles;
-
     @NotNull
     @Index(unique = true)
     private String externalId;
@@ -176,34 +173,6 @@ public class ProjectLine {
 
     public void setTail(String tail) {
         this.tail = tail;
-    }
-
-    /**
-     * To-many relationship, resolved on first access (and after reset).
-     * Changes to to-many relations are not persisted, make changes to the target entity.
-     */
-    @Generated(hash = 392678718)
-    public List<Vehicle> getVehicles() {
-        if (vehicles == null) {
-            final DaoSession daoSession = this.daoSession;
-            if (daoSession == null) {
-                throw new DaoException("Entity is detached from DAO context");
-            }
-            VehicleDao targetDao = daoSession.getVehicleDao();
-            List<Vehicle> vehiclesNew = targetDao._queryProjectLine_Vehicles(id);
-            synchronized (this) {
-                if (vehicles == null) {
-                    vehicles = vehiclesNew;
-                }
-            }
-        }
-        return vehicles;
-    }
-
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
-    @Generated(hash = 1696362987)
-    public synchronized void resetVehicles() {
-        vehicles = null;
     }
 
     public String getExternalId() {

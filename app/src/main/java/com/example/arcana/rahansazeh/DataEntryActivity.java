@@ -27,6 +27,8 @@ import android.widget.ToggleButton;
 import com.example.arcana.rahansazeh.adapters.LicensePlateAdapter;
 import com.example.arcana.rahansazeh.adapters.TimeRangeAdapter;
 import com.example.arcana.rahansazeh.adapters.VehicleTypeAdapter;
+import com.example.arcana.rahansazeh.model.KeyValue;
+import com.example.arcana.rahansazeh.model.KeyValueDao;
 import com.example.arcana.rahansazeh.model.LicensePlate;
 import com.example.arcana.rahansazeh.model.OutgoingPassengerRecord;
 import com.example.arcana.rahansazeh.model.OutgoingPassengerRecordDao;
@@ -47,6 +49,7 @@ import com.example.arcana.rahansazeh.model.VehicleTypeDao;
 import com.example.arcana.rahansazeh.service.VehicleService;
 import com.example.arcana.rahansazeh.service.VehicleTypeService;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicle;
+import com.example.arcana.rahansazeh.service.data.ServiceVehicleChange;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicleType;
 import com.example.arcana.rahansazeh.utils.AsyncTaskResult;
 import com.example.arcana.rahansazeh.utils.LicensePlateFormatter;
@@ -62,6 +65,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class DataEntryActivity extends BaseActivity {
     private TextView txtTimeHour;
@@ -213,11 +217,9 @@ public class DataEntryActivity extends BaseActivity {
     private String fixDateStr(String value) {
         if (value.length() < 1) {
             return "00";
-        }
-        else if (value.length() < 2) {
+        } else if (value.length() < 2) {
             return "0" + value;
-        }
-        else {
+        } else {
             return value;
         }
     }
@@ -269,10 +271,10 @@ public class DataEntryActivity extends BaseActivity {
 
     private static class RefreshDataResult {
         private List<ServiceVehicleType> vehicleTypes;
-        private List<ServiceVehicle> vehicles;
+        private List<ServiceVehicleChange> vehicles;
 
         public RefreshDataResult(List<ServiceVehicleType> vehicleTypes,
-                                 List<ServiceVehicle> vehicles) {
+                                 List<ServiceVehicleChange> vehicles) {
             this.vehicleTypes = vehicleTypes;
             this.vehicles = vehicles;
         }
@@ -281,85 +283,100 @@ public class DataEntryActivity extends BaseActivity {
             return vehicleTypes;
         }
 
-        public List<ServiceVehicle> getVehicles() {
+        public List<ServiceVehicleChange> getVehicles() {
             return vehicles;
         }
     }
 
+    private static class RefreshDataProgress {
+        private int totalRecords;
+        private int progress;
+        private RefreshDataResult result;
+
+        public RefreshDataProgress(int totalRecords, int progress, RefreshDataResult result) {
+            this.totalRecords = totalRecords;
+            this.progress = progress;
+            this.result = result;
+        }
+    }
+
     private class RefreshDataAsyncTask
-            extends AsyncTask<Void, Void, AsyncTaskResult<RefreshDataResult>> {
+            extends AsyncTask<Void, RefreshDataProgress, AsyncTaskResult<Void>> {
         private ProgressDialog progressDialog;
+        private String updateId = UUID.randomUUID().toString();
+        private boolean hasShownDialog = false;
+        private long lastEpoch = 0;
 
         @Override
-        protected AsyncTaskResult<RefreshDataResult> doInBackground(Void... voids) {
+        protected AsyncTaskResult<Void> doInBackground(Void... voids) {
             try {
                 VehicleTypeService vehicleTypeService = services().createVehicleType();
                 VehicleService vehicleService = services().createVehicle();
 
                 List<ServiceVehicleType> vehicleTypes = vehicleTypeService.getVehicleTypes(
                         params.getUserName(),
-                        params.getProjectLine().getExternalId());
+                        params.getProject().getExternalId());
 
-                List<ServiceVehicle> vehicles = vehicleService.getVehicles(
-                        params.getUserName(), params.getProjectLine().getExternalId());
+                int totalRecords = vehicleService.getVehicleChangeCount(params.getUserName(),
+                        params.getProject().getExternalId(), lastEpoch).intValue();
 
-                return new AsyncTaskResult<>(
-                        new RefreshDataResult(vehicleTypes, vehicles));
-            }
-            catch (Exception err) {
+                publishProgress(new RefreshDataProgress(
+                        totalRecords, 0,
+                        new RefreshDataResult(vehicleTypes, null)));
+
+                final int pageSize = 20;
+                final int pageCount = (totalRecords + pageSize - 1) / pageSize;
+
+                for (int page = 0; page < pageCount; page++) {
+                    List<ServiceVehicleChange> vehicles = vehicleService.getVehicleChanges(
+                            params.getUserName(), params.getProject().getExternalId(), lastEpoch,
+                            (long) page, (long) pageSize);
+
+                    publishProgress(new RefreshDataProgress(
+                            totalRecords, page * pageSize + vehicles.size(),
+                            new RefreshDataResult(null, vehicles)));
+                }
+
+                return new AsyncTaskResult<>((Void) null);
+            } catch (Exception err) {
                 return new AsyncTaskResult<>(err);
             }
         }
 
         @Override
-        protected void onPreExecute() {
-            progressDialog = new ProgressDialog(DataEntryActivity.this);
-            progressDialog.setTitle(getString(R.string.server_loading));
-            progressDialog.setMessage(DataEntryActivity.this.getResources().getString(R.string.please_wait));
-            progressDialog.setIndeterminate(false);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            progressDialog.show();
+        protected void onProgressUpdate(RefreshDataProgress... values) {
+            int totalRecords = values[0].totalRecords;
+            int progress = values[0].progress;
 
-            progressDialog.setCancelable(false);
-            progressDialog.setCanceledOnTouchOutside(false);
-        }
-
-        @Override
-        protected void onPostExecute(final AsyncTaskResult<RefreshDataResult> result) {
-            progressDialog.cancel();
-
-            if (result.getError() != null) {
-                showErrorDialog(getString(R.string.connection_error));
+            if (!hasShownDialog) {
+                progressDialog.setMax(totalRecords);
+                hasShownDialog = true;
             }
-            else {
-                VehicleTypeDao vehicleTypeDao = getDaoSession().getVehicleTypeDao();
-                VehicleDao vehicleDao = getDaoSession().getVehicleDao();
 
-                for (final ServiceVehicleType serviceVehicleType :
-                        result.getResult().getVehicleTypes()) {
-                    VehicleType vehicleType = Queriable.create(vehicleTypeDao.queryBuilder()
-                            .where(VehicleTypeDao.Properties.ExternalId.eq(serviceVehicleType.getId()))
-                            .limit(1)
-                            .offset(0)
-                            .list()).firstOrNull().execute();
+            progressDialog.setProgress(progress);
 
-                    if (vehicleType == null) {
-                        vehicleType = new VehicleType(null, serviceVehicleType.getTitle(),
-                                serviceVehicleType.getId());
-                        vehicleTypeDao.insert(vehicleType);
-                    }
-                    else {
-                        vehicleType.setTitle(serviceVehicleType.getTitle());
-                        vehicleTypeDao.update(vehicleType);
-                    }
+            RefreshDataResult result = values[0].result;
+
+            if (result != null) {
+                if (result.vehicleTypes != null) {
+                    updateVehicleTypes(result.vehicleTypes);
                 }
 
-                Collection<VehicleType> vehicleTypeRemoveList =
-                        Queriable.create(vehicleTypeDao.loadAll())
+                if (result.vehicles != null) {
+                    updateVehicles(result.vehicles);
+                }
+            }
+        }
+
+        private void updateVehicleTypes(final List<ServiceVehicleType> result) {
+            VehicleTypeDao vehicleTypeDao = getDaoSession().getVehicleTypeDao();
+
+            Collection<VehicleType> vehicleTypeRemoveList =
+                    Queriable.create(vehicleTypeDao.queryBuilder().list())
                             .filter(new Predicate<VehicleType>() {
                                 @Override
                                 public boolean predict(final VehicleType vehicleType) {
-                                    return !Queriable.create(result.getResult().getVehicleTypes())
+                                    return !Queriable.create(result)
                                             .exists(new Predicate<ServiceVehicleType>() {
                                                 @Override
                                                 public boolean predict(ServiceVehicleType serviceVehicleType) {
@@ -370,11 +387,45 @@ public class DataEntryActivity extends BaseActivity {
                                 }
                             }).execute();
 
-                for (VehicleType toRemove : vehicleTypeRemoveList) {
-                    vehicleTypeDao.delete(toRemove);
-                }
+            for (VehicleType toRemove : vehicleTypeRemoveList) {
+                vehicleTypeDao.delete(toRemove);
+            }
 
-                for (final ServiceVehicle serviceVehicle : result.getResult().getVehicles()) {
+            for (final ServiceVehicleType serviceVehicleType : result) {
+                VehicleType vehicleType = Queriable.create(vehicleTypeDao.queryBuilder()
+                        .where(VehicleTypeDao.Properties.ExternalId.eq(serviceVehicleType.getId()))
+                        .limit(1)
+                        .offset(0)
+                        .list()).firstOrNull().execute();
+
+                if (vehicleType == null) {
+                    vehicleType = new VehicleType(null, serviceVehicleType.getTitle(),
+                            serviceVehicleType.getId());
+                    vehicleTypeDao.insert(vehicleType);
+                } else {
+                    vehicleType.setTitle(serviceVehicleType.getTitle());
+                    vehicleTypeDao.update(vehicleType);
+                }
+            }
+        }
+
+        private void updateVehicles(final List<ServiceVehicleChange> result) {
+            VehicleTypeDao vehicleTypeDao = getDaoSession().getVehicleTypeDao();
+            VehicleDao vehicleDao = getDaoSession().getVehicleDao();
+            KeyValueDao keyValueDao = getDaoSession().getKeyValueDao();
+
+            long updateEpoch = 0;
+
+            for (final ServiceVehicleChange change : result) {
+                if ("remove".equals(change.getEventType())) {
+                    vehicleDao.queryBuilder()
+                            .where(VehicleDao.Properties.ExternalId.eq(change.getVehicleId()))
+                            .buildDelete()
+                            .executeDeleteWithoutDetachingEntities();
+                } else if (change.getVehicle() != null) {
+
+                    ServiceVehicle serviceVehicle = change.getVehicle();
+
                     Vehicle vehicle = Queriable.create(
                             vehicleDao.queryBuilder()
                                     .where(VehicleDao.Properties.ExternalId.eq(serviceVehicle.getId()))
@@ -398,43 +449,89 @@ public class DataEntryActivity extends BaseActivity {
                                         serviceVehicle.getLicensePlateType(),
                                         serviceVehicle.getLicensePlateRight(),
                                         serviceVehicle.getLicensePlateNationalCode()),
-                                params.getProjectLine().getId(),
+                                params.getProject().getId(),
                                 serviceVehicle.getId());
 
                         vehicleDao.insert(vehicle);
-                    }
-                    else {
+                    } else {
                         vehicle.setLicense(new LicensePlate(serviceVehicle.getLicensePlateLeft(),
                                 serviceVehicle.getLicensePlateType(),
                                 serviceVehicle.getLicensePlateRight(),
                                 serviceVehicle.getLicensePlateNationalCode()));
-                        vehicle.setProjectLine(params.getProjectLine());
+                        vehicle.setProject(params.getProject());
                         vehicle.setVehicleType(vehicleType);
 
                         vehicleDao.update(vehicle);
                     }
                 }
 
-                Collection<Vehicle> removeList = Queriable.create(
-                        vehicleDao.queryBuilder()
-                                .where(VehicleDao.Properties.ProjectLineId.eq(params.getProjectLine().getId()))
-                                .list()
-                ).filter(new Predicate<Vehicle>() {
-                    @Override
-                    public boolean predict(final Vehicle vehicle) {
-                        return !Queriable.create(result.getResult().getVehicles())
-                                .exists(new Predicate<ServiceVehicle>() {
-                                    @Override
-                                    public boolean predict(ServiceVehicle serviceVehicle) {
-                                        return vehicle.getExternalId().equals(serviceVehicle.getId());
-                                    }
-                                }).execute();
-                    }
-                }).execute();
+                updateEpoch = change.getEpoch();
+            }
 
-                for (Vehicle toRemove : removeList) {
-                    vehicleDao.delete(toRemove);
+            if (updateEpoch > 0) {
+                KeyValue keyValue = Queriable.create(
+                        keyValueDao.queryBuilder()
+                                .where(KeyValueDao.Properties.Key.eq("vehicleChangeEpoch"))
+                                .limit(1)
+                                .offset(0)
+                                .list()).firstOrNull().execute();
+
+                if (keyValue != null) {
+                    keyValue.setValue("" + updateEpoch);
+                    keyValueDao.save(keyValue);
+                } else {
+                    keyValueDao.insert(new KeyValue(
+                            null, "vehicleChangeEpoch", "" + updateEpoch));
                 }
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(DataEntryActivity.this);
+            progressDialog.setTitle(getString(R.string.server_loading));
+            progressDialog.setMessage(DataEntryActivity.this.getResources().getString(R.string.please_wait));
+            progressDialog.setIndeterminate(false);
+            progressDialog.setCancelable(false);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+
+            progressDialog.setMax(0);
+            progressDialog.show();
+
+            KeyValueDao keyValueDao = getDaoSession().getKeyValueDao();
+
+            KeyValue keyValue = Queriable.create(
+                    keyValueDao.queryBuilder()
+                            .where(KeyValueDao.Properties.Key.eq("vehicleChangeEpoch"))
+                            .limit(1)
+                            .offset(0)
+                            .list()).firstOrNull().execute();
+
+            if (keyValue != null) {
+                try {
+                    lastEpoch = Long.parseLong(keyValue.getValue());
+                } catch (Exception err) {
+                }
+            }
+        }
+
+        @Override
+        protected void onPostExecute(final AsyncTaskResult<Void> result) {
+            progressDialog.cancel();
+
+            if (result.getError() != null) {
+                showErrorDialog(getString(R.string.connection_error));
+            } else {
+                /*
+                VehicleDao vehicleDao = getDaoSession().getVehicleDao();
+                vehicleDao.queryBuilder()
+                        .where(
+                                VehicleDao.Properties.UpdateId.notEq(updateId),
+                                VehicleDao.Properties.ProjectId.eq(params.getProjectId()))
+                        .buildDelete()
+                        .executeDeleteWithoutDetachingEntities();
+                        */
 
                 vehicleTypeAdapter =
                         new VehicleTypeAdapter(DataEntryActivity.this, getDaoSession());
@@ -495,8 +592,8 @@ public class DataEntryActivity extends BaseActivity {
 
         List<TimeRange> timeRangeList = new ArrayList<>();
         for (int i = 7; i < 23; i++) {
-            for (int j = 0; j < 60; j+=15) {
-                timeRangeList.add(new TimeRange((long)(i * 60 + j),
+            for (int j = 0; j < 60; j += 15) {
+                timeRangeList.add(new TimeRange((long) (i * 60 + j),
                         i, i + ((j + 15) / 60), j, (j + 15) % 60));
             }
         }
@@ -505,7 +602,7 @@ public class DataEntryActivity extends BaseActivity {
         spinTimeRange.setAdapter(timeRangeAdapter);
 
         final LicensePlateAdapter licensePlateAdapter =
-                new LicensePlateAdapter(this, getDaoSession());
+                new LicensePlateAdapter(this, params.project, getDaoSession());
         txtLicensePlate.setAdapter(licensePlateAdapter);
 
         vehicleTypeAdapter =
@@ -560,8 +657,7 @@ public class DataEntryActivity extends BaseActivity {
 
                 if (isInsertion && s.length() == 2) {
                     s.insert(0, " " + "ت" + " ");
-                }
-                else if (isInsertion && s.length() > 2) {
+                } else if (isInsertion && s.length() > 2) {
                     int index = s.length() - 1;
                     while (index >= 0 && s.charAt(index) != ' ') {
                         index = index - 1;
@@ -660,11 +756,9 @@ public class DataEntryActivity extends BaseActivity {
         onTimerHandler();
 
         final Handler h = new Handler();
-        h.postDelayed(new Runnable()
-        {
+        h.postDelayed(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -693,8 +787,7 @@ public class DataEntryActivity extends BaseActivity {
     public void onTimeSet(String cause, int hour, int minute, int second) {
         if (cause.equals("departure")) {
             txtDepartureTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute) + ":" + fixDateStr(second));
-        }
-        else if (cause.equals("arrival")) {
+        } else if (cause.equals("arrival")) {
             txtArrivalTime.setText(fixDateStr(hour) + ":" + fixDateStr(minute) + ":" + fixDateStr(second));
         }
     }
@@ -728,7 +821,7 @@ public class DataEntryActivity extends BaseActivity {
     }
 
     @Override
-    public void onSaveInstanceState (Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
     }
 
@@ -741,8 +834,7 @@ public class DataEntryActivity extends BaseActivity {
             }
 
             return ret;
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             return 0;
         }
     }
@@ -766,8 +858,7 @@ public class DataEntryActivity extends BaseActivity {
     public void onSavePassengerClicked(View view) {
         if (spinTimeRange.getSelectedItemPosition() < 1) {
             btnSavePassenger.setError("بازه زمانی را انتخاب کنید");
-        }
-        else {
+        } else {
             btnSavePassenger.setError(null);
 
             UserDao userDao = getDaoSession().getUserDao();
@@ -787,7 +878,8 @@ public class DataEntryActivity extends BaseActivity {
                     params.getMonth(), params.getDay(),
                     range.getStartHour(), range.getStartMinute(),
                     range.getEndHour(), range.getEndMinute(),
-                    getPassengerCount(), params.hasSelectedHeadTerminal
+                    getPassengerCount(), params.hasSelectedHeadTerminal,
+                    UUID.randomUUID().toString()
             );
 
             OutgoingPassengerRecordDao passengerRecordDao =
@@ -799,7 +891,7 @@ public class DataEntryActivity extends BaseActivity {
     }
 
     public void onSaveClicked(View view) {
-        TextValidator[] allValidators = new TextValidator[] {
+        TextValidator[] allValidators = new TextValidator[]{
                 loadPassengerCountValidator,
                 unloadPassengerCountValidator
         };
@@ -815,8 +907,7 @@ public class DataEntryActivity extends BaseActivity {
         if (!txtLicensePlate.getText().toString().matches("^\\d{3} ت \\d{2}")) {
             txtLicensePlate.setError("پلاک را به صورت صحیح وارد کنید");
             isValid = false;
-        }
-        else {
+        } else {
             txtLicensePlate.setError(null);
         }
 
@@ -824,8 +915,7 @@ public class DataEntryActivity extends BaseActivity {
             btnTaxiLoad.setError("یکی از گزینه ها را انتخاب کنید");
             btnTaxiUnLoad.setError("یکی از گزینه ها را انتخاب کنید");
             isValid = false;
-        }
-        else {
+        } else {
             btnTaxiLoad.setError(null);
             btnTaxiUnLoad.setError(null);
         }
@@ -834,8 +924,7 @@ public class DataEntryActivity extends BaseActivity {
                 !txtArrivalTime.getText().toString().matches("^\\d{2}:\\d{2}:\\d{2}")) {
             btnSelectArrivalTime.setError("زمان رسیدن را انتخاب کنید");
             isValid = false;
-        }
-        else {
+        } else {
             btnSelectArrivalTime.setError(null);
         }
 
@@ -843,8 +932,7 @@ public class DataEntryActivity extends BaseActivity {
                 !txtDepartureTime.getText().toString().matches("^\\d{2}:\\d{2}:\\d{2}")) {
             btnSelectDepartureTime.setError("زمان اعزام را انتخاب کنید");
             isValid = false;
-        }
-        else {
+        } else {
             btnSelectDepartureTime.setError(null);
         }
 
@@ -855,11 +943,11 @@ public class DataEntryActivity extends BaseActivity {
         if (isValid) {
             UserDao userDao = getDaoSession().getUserDao();
             User user = Queriable.create(
-                userDao.queryBuilder()
-                        .where(UserDao.Properties.NationalCode.eq(params.getUserName()))
-                        .limit(1)
-                        .offset(0)
-                        .list()
+                    userDao.queryBuilder()
+                            .where(UserDao.Properties.NationalCode.eq(params.getUserName()))
+                            .limit(1)
+                            .offset(0)
+                            .list()
             ).first().execute();
 
             Integer[] defaultTimes = new Integer[3];
@@ -869,12 +957,12 @@ public class DataEntryActivity extends BaseActivity {
 
             Integer[] arrivalTime = txtArrivalTime.isEnabled() ?
                     Queriable.create(txtArrivalTime.getText().toString().split(":"))
-                    .map(new Selector<String, Integer>() {
-                        @Override
-                        public Integer select(String s) {
-                            return Integer.parseInt(s);
-                        }
-                    }).execute().toArray(new Integer[0]) : defaultTimes;
+                            .map(new Selector<String, Integer>() {
+                                @Override
+                                public Integer select(String s) {
+                                    return Integer.parseInt(s);
+                                }
+                            }).execute().toArray(new Integer[0]) : defaultTimes;
 
             Integer[] departureTime = txtDepartureTime.isEnabled() ?
                     Queriable.create(txtDepartureTime.getText().toString().split(":"))
@@ -891,24 +979,20 @@ public class DataEntryActivity extends BaseActivity {
             try {
                 if (loadPassengersCount.isEnabled()) {
                     loadPassenger = Integer.parseInt(loadPassengersCount.getText().toString());
-                }
-                else {
+                } else {
                     loadPassenger = 0;
                 }
-            }
-            catch (Exception err) {
+            } catch (Exception err) {
                 loadPassenger = 0;
             }
 
             try {
                 if (unloadPassengersCount.isEnabled()) {
                     unloadPassenger = Integer.parseInt(unloadPassengersCount.getText().toString());
-                }
-                else {
+                } else {
                     unloadPassenger = 0;
                 }
-            }
-            catch (Exception err) {
+            } catch (Exception err) {
                 unloadPassenger = 0;
             }
 
@@ -921,7 +1005,8 @@ public class DataEntryActivity extends BaseActivity {
                     departureTime[0], departureTime[1], departureTime[2],
                     loadPassenger, unloadPassenger, params.hasSelectedHeadTerminal,
                     txtLicensePlate.getText().toString().replace(" ", "") + "00",
-                    vehicleTypeAdapter.getItem(spinTaxiType.getSelectedItemPosition()).getTitle()
+                    vehicleTypeAdapter.getItem(spinTaxiType.getSelectedItemPosition()).getTitle(),
+                    UUID.randomUUID().toString()
             );
 
             OutgoingVehicleRecordDao outgoingDao = getDaoSession().getOutgoingVehicleRecordDao();

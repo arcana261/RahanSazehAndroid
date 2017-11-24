@@ -5,6 +5,12 @@ import android.content.Context;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV10AddTerminalToOutgoingVehicle;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV11AddHasSelectedTerminalInPassengerRecordEntry;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV12RecreateAllTables;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV13AddClientIdField;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV14AddProjectToVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV15RemoveProjectLineFromVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV16AddUpdateIdToVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV17AddSupportForVehicleUpdates;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV18AddIndexToVehicle;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV1CreateUser;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV2CreateProjectAndProjectLine;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV3AddExternalIdToProjectAndProjectLine;
@@ -63,6 +69,12 @@ public class DatabaseUpgradeHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV10AddTerminalToOutgoingVehicle());
         migrations.add(new MigrationV11AddHasSelectedTerminalInPassengerRecordEntry());
         migrations.add(new MigrationV12RecreateAllTables());
+        migrations.add(new MigrationV13AddClientIdField());
+        migrations.add(new MigrationV14AddProjectToVehicle());
+        migrations.add(new MigrationV15RemoveProjectLineFromVehicle());
+        migrations.add(new MigrationV16AddUpdateIdToVehicle());
+        migrations.add(new MigrationV17AddSupportForVehicleUpdates());
+        migrations.add(new MigrationV18AddIndexToVehicle());
 
         // Sorting just to be safe, in case other people add migrations in the wrong order.
         Comparator<Migration> migrationComparator = new Comparator<Migration>() {

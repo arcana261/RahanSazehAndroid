@@ -90,6 +90,26 @@ public class ProjectSelectionActivity extends BaseActivity {
                 ProjectDao projectDao = getDaoSession().getProjectDao();
                 ProjectLineDao projectLineDao = getDaoSession().getProjectLineDao();
 
+
+                Collection<Project> removeList = Queriable.create(projectDao.queryBuilder().list())
+                        .filter(new Predicate<Project>() {
+                            @Override
+                            public boolean predict(final Project project) {
+                                return !Queriable.create(result.getResult())
+                                        .exists(new Predicate<ServiceProject>() {
+                                            @Override
+                                            public boolean predict(ServiceProject serviceProject) {
+                                                return project.getExternalId().equals(
+                                                        serviceProject.getId());
+                                            }
+                                        }).execute();
+                            }
+                        }).execute();
+
+                for (Project toRemove : removeList) {
+                    projectDao.delete(toRemove);
+                }
+
                 for (final ServiceProject serviceProject : result.getResult()) {
                     Project project;
 
@@ -140,46 +160,6 @@ public class ProjectSelectionActivity extends BaseActivity {
                             projectLineDao.save(projectLine);
                         }
                     }
-
-                    project.resetProjectLines();
-
-                    Collection<ProjectLine> removeList = Queriable.create(existingProjectLines)
-                            .filter(new Predicate<ProjectLine>() {
-                                @Override
-                                public boolean predict(final ProjectLine projectLine) {
-                                    return !Queriable.create(serviceProject.getLines())
-                                            .exists(new Predicate<ServiceProjectLine>() {
-                                                @Override
-                                                public boolean predict(ServiceProjectLine serviceProjectLine) {
-                                                    return projectLine.getExternalId().equals(
-                                                            serviceProjectLine.getId());
-                                                }
-                                            }).execute();
-                                }
-                            }).execute();
-
-                    for (ProjectLine toRemove : removeList) {
-                        projectLineDao.delete(toRemove);
-                    }
-                }
-
-                Collection<Project> removeList = Queriable.create(projectDao.loadAll())
-                        .filter(new Predicate<Project>() {
-                            @Override
-                            public boolean predict(final Project project) {
-                                return !Queriable.create(result.getResult())
-                                        .exists(new Predicate<ServiceProject>() {
-                                            @Override
-                                            public boolean predict(ServiceProject serviceProject) {
-                                                return project.getExternalId().equals(
-                                                        serviceProject.getId());
-                                            }
-                                        }).execute();
-                            }
-                        }).execute();
-
-                for (Project toRemove : removeList) {
-                    projectDao.delete(toRemove);
                 }
             }
         }
@@ -396,6 +376,7 @@ public class ProjectSelectionActivity extends BaseActivity {
     public void onSelectLineClicked(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
+        selectedProject.resetProjectLines();
         final List<ProjectLine> lines = selectedProject.getProjectLines();
         final String[] titles = Queriable.create(lines)
                 .map(new Selector<ProjectLine, String>() {

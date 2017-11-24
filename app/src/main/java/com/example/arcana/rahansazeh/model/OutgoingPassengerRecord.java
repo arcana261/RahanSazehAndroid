@@ -47,6 +47,8 @@ public class OutgoingPassengerRecord {
 
     private boolean hasSelectedHeadTerminal;
 
+    private String clientId;
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -54,10 +56,11 @@ public class OutgoingPassengerRecord {
     @Generated(hash = 278215829)
     private transient OutgoingPassengerRecordDao myDao;
 
-    @Generated(hash = 238794336)
+    @Generated(hash = 422099683)
     public OutgoingPassengerRecord(Long id, @NotNull Long userId, @NotNull Long projectId,
             @NotNull Long projectLineId, int year, int month, int day, int startHour, int startMinute,
-            int finishHour, int finishMinute, int passengerCount, boolean hasSelectedHeadTerminal) {
+            int finishHour, int finishMinute, int passengerCount, boolean hasSelectedHeadTerminal,
+            String clientId) {
         this.id = id;
         this.userId = userId;
         this.projectId = projectId;
@@ -71,6 +74,7 @@ public class OutgoingPassengerRecord {
         this.finishMinute = finishMinute;
         this.passengerCount = passengerCount;
         this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
+        this.clientId = clientId;
     }
 
     @Generated(hash = 937469481)
@@ -324,6 +328,14 @@ public class OutgoingPassengerRecord {
 
     public void setHasSelectedHeadTerminal(boolean hasSelectedHeadTerminal) {
         this.hasSelectedHeadTerminal = hasSelectedHeadTerminal;
+    }
+
+    public String getClientId() {
+        return this.clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     /** called by internal mechanisms, do not call yourself. */

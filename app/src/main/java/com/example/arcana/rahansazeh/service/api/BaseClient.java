@@ -143,7 +143,7 @@ public class BaseClient {
     private ResponseWrapper post(String url, JSONObject params) throws Exception {
         final ResponseWrapper result = new ResponseWrapper();
 
-        StringEntity entity = new StringEntity(params.toString());
+        StringEntity entity = new StringEntity(params.toString(), "UTF-8");
 
         client.post(null, getAbsoluteUrl(url), new Header[0], entity,
                 "application/json", createHandler(result));
