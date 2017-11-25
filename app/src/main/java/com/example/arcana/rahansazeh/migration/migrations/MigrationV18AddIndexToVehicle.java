@@ -16,6 +16,8 @@ public class MigrationV18AddIndexToVehicle extends BaseMigration {
 
     @Override
     public void runMigration(Database db) {
-        addIndex(db, VehicleDao.TABLENAME, VehicleDao.Properties.License.columnName);
+        if (!hasColumn(db, VehicleDao.TABLENAME, VehicleDao.Properties.License.columnName)) {
+            addIndex(db, VehicleDao.TABLENAME, VehicleDao.Properties.License.columnName);
+        }
     }
 }

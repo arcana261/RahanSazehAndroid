@@ -40,6 +40,9 @@ public class ProjectLine {
     @Index(unique = true)
     private String externalId;
 
+    @Index
+    private long sortCriteria;
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
@@ -52,15 +55,16 @@ public class ProjectLine {
     public ProjectLine() {
     }
 
-    @Generated(hash = 799850192)
+    @Generated(hash = 1949245003)
     public ProjectLine(Long id, @NotNull String title, @NotNull Long projectId, @NotNull String head,
-            @NotNull String tail, @NotNull String externalId) {
+            @NotNull String tail, @NotNull String externalId, long sortCriteria) {
         this.id = id;
         this.title = title;
         this.projectId = projectId;
         this.head = head;
         this.tail = tail;
         this.externalId = externalId;
+        this.sortCriteria = sortCriteria;
     }
 
     public Long getId() {
@@ -181,6 +185,14 @@ public class ProjectLine {
 
     public void setExternalId(String externalId) {
         this.externalId = externalId;
+    }
+
+    public long getSortCriteria() {
+        return this.sortCriteria;
+    }
+
+    public void setSortCriteria(long sortCriteria) {
+        this.sortCriteria = sortCriteria;
     }
 
     /** called by internal mechanisms, do not call yourself. */

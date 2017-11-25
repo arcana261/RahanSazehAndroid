@@ -31,7 +31,8 @@ public class RahanSazehApiClient extends BaseClient
     }
 
     public RahanSazehApiClient() {
-        super("http://192.168.2.7:8080");
+        //super("http://192.168.2.7:8080");
+        super("http://178.162.207.98:8080");
     }
 
     @Override

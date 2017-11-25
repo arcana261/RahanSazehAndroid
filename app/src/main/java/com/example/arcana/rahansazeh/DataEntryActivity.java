@@ -1,10 +1,14 @@
 package com.example.arcana.rahansazeh;
 
+import android.app.Activity;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -15,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -53,6 +58,7 @@ import com.example.arcana.rahansazeh.service.data.ServiceVehicleChange;
 import com.example.arcana.rahansazeh.service.data.ServiceVehicleType;
 import com.example.arcana.rahansazeh.utils.AsyncTaskResult;
 import com.example.arcana.rahansazeh.utils.LicensePlateFormatter;
+import com.example.arcana.rahansazeh.utils.TaskFragment;
 import com.example.arcana.rahansazeh.validation.TextValidator;
 import com.gurkashi.lava.lambdas.Predicate;
 import com.gurkashi.lava.lambdas.Selector;
@@ -65,7 +71,14 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DataEntryActivity extends BaseActivity {
     private TextView txtTimeHour;
@@ -300,71 +313,255 @@ public class DataEntryActivity extends BaseActivity {
         }
     }
 
-    private class RefreshDataAsyncTask
-            extends AsyncTask<Void, RefreshDataProgress, AsyncTaskResult<Void>> {
-        private ProgressDialog progressDialog;
+    private ProgressDialog refreshDataProgressDialog = null;
+
+    public static class RefreshDataAsyncTaskFragment extends TaskFragment<DataEntryActivity, RefreshDataProgress, AsyncTaskResult<Void>> {
         private String updateId = UUID.randomUUID().toString();
         private boolean hasShownDialog = false;
         private long lastEpoch = 0;
+        private static final int pageSize = 50;
+        private int totalRecords = 0;
 
-        @Override
-        protected AsyncTaskResult<Void> doInBackground(Void... voids) {
-            try {
-                VehicleTypeService vehicleTypeService = services().createVehicleType();
-                VehicleService vehicleService = services().createVehicle();
+        private String userName;
+        private String projectExternalId;
+        private Long projectId;
 
-                List<ServiceVehicleType> vehicleTypes = vehicleTypeService.getVehicleTypes(
-                        params.getUserName(),
-                        params.getProject().getExternalId());
+        private Project project;
 
-                int totalRecords = vehicleService.getVehicleChangeCount(params.getUserName(),
-                        params.getProject().getExternalId(), lastEpoch).intValue();
+        private ProgressDialog getProgressDialog(DataEntryActivity activity) {
+            if (activity.refreshDataProgressDialog == null) {
+                onInitialize(activity);
+            }
 
-                publishProgress(new RefreshDataProgress(
-                        totalRecords, 0,
-                        new RefreshDataResult(vehicleTypes, null)));
+            return activity.refreshDataProgressDialog;
+        }
 
-                final int pageSize = 20;
+        public static RefreshDataAsyncTaskFragment newInstance(String userName, String projectExternalId, Long projectId) {
+            Bundle bundle = new Bundle();
+            bundle.putString("userName", userName);
+            bundle.putString("projectExternalId", projectExternalId);
+            bundle.putLong("projectId", projectId);
+
+            RefreshDataAsyncTaskFragment fragment = new RefreshDataAsyncTaskFragment();
+            fragment.setArguments(bundle);
+
+            return fragment;
+        }
+
+        private class QueueItem {
+            public int page;
+            public List<ServiceVehicleChange> items;
+            private Exception error;
+            private boolean finished;
+
+            public QueueItem(int page, List<ServiceVehicleChange> items) {
+                this.page = page;
+                this.items = items;
+                this.error = null;
+                this.finished = false;
+            }
+
+            public QueueItem(int page, Exception error) {
+                this.page = page;
+                this.items = null;
+                this.error = error;
+                this.finished = false;
+            }
+
+            public QueueItem() {
+                this.page = 0;
+                this.items = null;
+                this.error = null;
+                this.finished = true;
+            }
+        }
+
+        private BlockingQueue<QueueItem> items = new ArrayBlockingQueue<QueueItem>(10);
+
+        private class Producer implements Runnable {
+            private volatile boolean isCanceled = false;
+
+            @Override
+            public void run() {
                 final int pageCount = (totalRecords + pageSize - 1) / pageSize;
+                VehicleService vehicleService = BaseActivity.getServiceFactory().createVehicle();
 
                 for (int page = 0; page < pageCount; page++) {
-                    List<ServiceVehicleChange> vehicles = vehicleService.getVehicleChanges(
-                            params.getUserName(), params.getProject().getExternalId(), lastEpoch,
-                            (long) page, (long) pageSize);
+                    synchronized (this) {
+                        if (isCanceled) {
+                            break;
+                        }
+                    }
 
-                    publishProgress(new RefreshDataProgress(
-                            totalRecords, page * pageSize + vehicles.size(),
-                            new RefreshDataResult(null, vehicles)));
+                    try {
+                        List<ServiceVehicleChange> vehicles = vehicleService.getVehicleChanges(
+                                userName, projectExternalId, lastEpoch,
+                                (long) page, (long) pageSize);
+
+                        offer(new QueueItem(page, vehicles));
+                    } catch (Exception err) {
+                        try {
+                            offer(new QueueItem(page, err));
+                        } catch (InterruptedException e) {
+                            break;
+                        }
+
+                        break;
+                    }
                 }
 
-                return new AsyncTaskResult<>((Void) null);
-            } catch (Exception err) {
-                return new AsyncTaskResult<>(err);
+                boolean done = false;
+
+                while (!done) {
+                    try {
+                        offer(new QueueItem());
+                        done = true;
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+
+            private void offer(QueueItem item) throws InterruptedException {
+                boolean done = false;
+
+                while (!done) {
+                    done = items.offer(item, 1000, TimeUnit.MILLISECONDS);
+                }
             }
         }
 
         @Override
-        protected void onProgressUpdate(RefreshDataProgress... values) {
-            int totalRecords = values[0].totalRecords;
-            int progress = values[0].progress;
+        protected void onProgressUpdate(DataEntryActivity activity, RefreshDataProgress result) {
+            int totalRecords = result.totalRecords;
+            int progress = result.progress;
 
             if (!hasShownDialog) {
-                progressDialog.setMax(totalRecords);
+                getProgressDialog(activity).setMax(totalRecords);
                 hasShownDialog = true;
             }
 
-            progressDialog.setProgress(progress);
+            getProgressDialog(activity).setProgress(progress);
+        }
 
-            RefreshDataResult result = values[0].result;
+        @Override
+        protected void onCancelled(DataEntryActivity activity) {
+            getProgressDialog(activity).cancel();
+            activity.refreshDataProgressDialog = null;
 
-            if (result != null) {
-                if (result.vehicleTypes != null) {
-                    updateVehicleTypes(result.vehicleTypes);
+            ((DataEntryActivity) activity).vehicleTypeAdapter =
+                    new VehicleTypeAdapter(activity, getDaoSession());
+            activity.spinTaxiType.setAdapter(activity.vehicleTypeAdapter);
+        }
+
+        @Override
+        protected void onPostExecute(DataEntryActivity activity, AsyncTaskResult<Void> result) {
+            getProgressDialog(activity).cancel();
+            activity.refreshDataProgressDialog = null;
+
+            if (result.getError() != null) {
+                Logger.getLogger("DataEntryActivity").log(Level.SEVERE, result.getError().toString());
+                result.getError().printStackTrace();
+                activity.showErrorDialog(getString(R.string.connection_error));
+            } else {
+                /*
+                VehicleDao vehicleDao = getDaoSession().getVehicleDao();
+                vehicleDao.queryBuilder()
+                        .where(
+                                VehicleDao.Properties.UpdateId.notEq(updateId),
+                                VehicleDao.Properties.ProjectId.eq(params.getProjectId()))
+                        .buildDelete()
+                        .executeDeleteWithoutDetachingEntities();
+                        */
+
+                activity.vehicleTypeAdapter =
+                        new VehicleTypeAdapter(activity, getDaoSession());
+                activity.spinTaxiType.setAdapter(activity.vehicleTypeAdapter);
+            }
+        }
+
+        @Override
+        protected AsyncTaskResult<Void> doInBackground() {
+            Producer producer = new Producer();
+
+            try {
+                KeyValueDao keyValueDao = getDaoSession().getKeyValueDao();
+                ProjectDao projectDao = getDaoSession().getProjectDao();
+
+                project = Queriable.create(
+                        projectDao.queryBuilder()
+                                .where(ProjectDao.Properties.Id.eq(projectId))
+                                .limit(1)
+                                .offset(0)
+                                .list()
+                ).firstOrNull().execute();
+
+                KeyValue keyValue = Queriable.create(
+                        keyValueDao.queryBuilder()
+                                .where(KeyValueDao.Properties.Key.eq("vehicleChangeEpoch"))
+                                .limit(1)
+                                .offset(0)
+                                .list()).firstOrNull().execute();
+
+                if (keyValue != null) {
+                    try {
+                        lastEpoch = Long.parseLong(keyValue.getValue());
+                    } catch (Exception err) {
+                    }
                 }
 
-                if (result.vehicles != null) {
-                    updateVehicles(result.vehicles);
+                VehicleTypeService vehicleTypeService = BaseActivity.getServiceFactory().createVehicleType();
+                VehicleService vehicleService = BaseActivity.getServiceFactory().createVehicle();
+
+                List<ServiceVehicleType> vehicleTypes = vehicleTypeService.getVehicleTypes(
+                        userName,
+                        projectExternalId);
+
+                totalRecords = vehicleService.getVehicleChangeCount(userName,
+                        projectExternalId, lastEpoch).intValue();
+
+                publishProgress(new RefreshDataProgress(
+                        totalRecords, 0, null ));
+
+                producer = new Producer();
+                Thread producerThread = new Thread(producer);
+                producerThread.start();
+
+                updateVehicleTypes(vehicleTypes);
+
+                while (producerThread.isAlive()) {
+                    QueueItem item = items.take();
+
+                    if (item == null || item.finished) {
+                        break;
+                    } else if (item.error != null) {
+                        throw item.error;
+                    } else {
+                        RefreshDataProgress progress = new RefreshDataProgress(
+                                totalRecords, item.page * pageSize + item.items.size(),
+                                new RefreshDataResult(null, item.items));
+
+                        update(progress.result, true, progress.totalRecords,
+                                item.page * pageSize);
+                    }
                 }
+
+                producer.isCanceled = true;
+                return new AsyncTaskResult<>((Void) null);
+            } catch (Exception err) {
+                producer.isCanceled = true;
+                return new AsyncTaskResult<>(err);
+            }
+        }
+
+        private void update(RefreshDataResult result, boolean updateProgress,
+                            int totalRecords, int fromProgress) {
+            if (result.vehicleTypes != null) {
+                updateVehicleTypes(result.vehicleTypes);
+            }
+
+            if (result.vehicles != null) {
+                updateVehicles(result.vehicles, updateProgress,
+                        totalRecords, fromProgress);
             }
         }
 
@@ -409,7 +606,9 @@ public class DataEntryActivity extends BaseActivity {
             }
         }
 
-        private void updateVehicles(final List<ServiceVehicleChange> result) {
+        private void updateVehicles(final List<ServiceVehicleChange> result,
+                                    boolean updateProgress, int totalRecords,
+                                    int fromProgress) {
             VehicleTypeDao vehicleTypeDao = getDaoSession().getVehicleTypeDao();
             VehicleDao vehicleDao = getDaoSession().getVehicleDao();
             KeyValueDao keyValueDao = getDaoSession().getKeyValueDao();
@@ -449,8 +648,13 @@ public class DataEntryActivity extends BaseActivity {
                                         serviceVehicle.getLicensePlateType(),
                                         serviceVehicle.getLicensePlateRight(),
                                         serviceVehicle.getLicensePlateNationalCode()),
-                                params.getProject().getId(),
+                                projectId,
                                 serviceVehicle.getId());
+
+                        if (vehicleType == null) {
+                            List<VehicleType> all = vehicleTypeDao.queryBuilder().list();
+                            System.out.println();
+                        }
 
                         vehicleDao.insert(vehicle);
                     } else {
@@ -458,7 +662,7 @@ public class DataEntryActivity extends BaseActivity {
                                 serviceVehicle.getLicensePlateType(),
                                 serviceVehicle.getLicensePlateRight(),
                                 serviceVehicle.getLicensePlateNationalCode()));
-                        vehicle.setProject(params.getProject());
+                        vehicle.setProject(project);
                         vehicle.setVehicleType(vehicleType);
 
                         vehicleDao.update(vehicle);
@@ -466,6 +670,13 @@ public class DataEntryActivity extends BaseActivity {
                 }
 
                 updateEpoch = change.getEpoch();
+
+                if (updateProgress) {
+                    fromProgress = fromProgress + 1;
+
+                    publishProgress(new RefreshDataProgress(
+                            totalRecords, fromProgress, null));
+                }
             }
 
             if (updateEpoch > 0) {
@@ -486,57 +697,35 @@ public class DataEntryActivity extends BaseActivity {
             }
         }
 
+
         @Override
-        protected void onPreExecute() {
-            progressDialog = new ProgressDialog(DataEntryActivity.this);
-            progressDialog.setTitle(getString(R.string.server_loading));
-            progressDialog.setMessage(DataEntryActivity.this.getResources().getString(R.string.please_wait));
-            progressDialog.setIndeterminate(false);
-            progressDialog.setCancelable(false);
-            progressDialog.setCanceledOnTouchOutside(false);
-            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-
-            progressDialog.setMax(0);
-            progressDialog.show();
-
-            KeyValueDao keyValueDao = getDaoSession().getKeyValueDao();
-
-            KeyValue keyValue = Queriable.create(
-                    keyValueDao.queryBuilder()
-                            .where(KeyValueDao.Properties.Key.eq("vehicleChangeEpoch"))
-                            .limit(1)
-                            .offset(0)
-                            .list()).firstOrNull().execute();
-
-            if (keyValue != null) {
-                try {
-                    lastEpoch = Long.parseLong(keyValue.getValue());
-                } catch (Exception err) {
-                }
+        protected void onParseArguments(@Nullable Bundle arguments) {
+            if (arguments != null) {
+                userName = arguments.getString("userName");
+                projectExternalId = arguments.getString("projectExternalId");
+                projectId = arguments.getLong("projectId", -1);
             }
         }
 
         @Override
-        protected void onPostExecute(final AsyncTaskResult<Void> result) {
-            progressDialog.cancel();
+        protected void onInitialize(DataEntryActivity activity) {
+            activity.refreshDataProgressDialog = new ProgressDialog(activity);
+            activity.refreshDataProgressDialog.setTitle(getString(R.string.server_loading));
+            activity.refreshDataProgressDialog.setMessage(((DataEntryActivity) activity).getResources().getString(R.string.please_wait));
+            activity.refreshDataProgressDialog.setIndeterminate(false);
+            activity.refreshDataProgressDialog.setCancelable(false);
+            activity.refreshDataProgressDialog.setCanceledOnTouchOutside(false);
+            activity.refreshDataProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
-            if (result.getError() != null) {
-                showErrorDialog(getString(R.string.connection_error));
-            } else {
-                /*
-                VehicleDao vehicleDao = getDaoSession().getVehicleDao();
-                vehicleDao.queryBuilder()
-                        .where(
-                                VehicleDao.Properties.UpdateId.notEq(updateId),
-                                VehicleDao.Properties.ProjectId.eq(params.getProjectId()))
-                        .buildDelete()
-                        .executeDeleteWithoutDetachingEntities();
-                        */
+            activity.refreshDataProgressDialog.setMax(0);
+            activity.refreshDataProgressDialog.show();
+        }
 
-                vehicleTypeAdapter =
-                        new VehicleTypeAdapter(DataEntryActivity.this, getDaoSession());
-                spinTaxiType.setAdapter(vehicleTypeAdapter);
-            }
+        @Override
+        protected void onDetached(DataEntryActivity activity) {
+            getProgressDialog(activity).cancel();
+            activity.refreshDataProgressDialog = null;
+            hasShownDialog = false;
         }
     }
 
@@ -556,7 +745,18 @@ public class DataEntryActivity extends BaseActivity {
             }
         }
 
-        new RefreshDataAsyncTask().execute();
+        FragmentManager fragmentManager = getFragmentManager();
+        RefreshDataAsyncTaskFragment fragment = (RefreshDataAsyncTaskFragment) fragmentManager.findFragmentByTag("dataentry_refresh_task");
+
+        if (fragment == null) {
+            fragment = RefreshDataAsyncTaskFragment.newInstance(params.getUserName(),
+                    params.getProject().getExternalId(),
+                    params.getProject().getId());
+
+            fragmentManager.beginTransaction()
+                    .add(fragment, "dataentry_refresh_task")
+                    .commit();
+        }
 
         final DataEntryActivity activity = this;
 
@@ -612,6 +812,18 @@ public class DataEntryActivity extends BaseActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Vehicle selectedVehicle = licensePlateAdapter.getVehicleById(id);
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                if (imm != null) {
+                    if (view.getWindowToken() != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+
+                    if (view.getApplicationWindowToken() != null) {
+                        imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+                    }
+                }
 
                 txtLicensePlate.setText(
                         LicensePlateFormatter.toString(selectedVehicle.getLicense()));

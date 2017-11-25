@@ -17,12 +17,7 @@ public class MigrationV13AddClientIdField extends BaseMigration {
 
     @Override
     public void runMigration(Database db) {
-        addColumn(db, OutgoingVehicleRecordDao.TABLENAME,
-                OutgoingVehicleRecordDao.Properties.ClientId.columnName,
-                "TEXT");
-
-        addColumn(db, OutgoingPassengerRecordDao.TABLENAME,
-                OutgoingPassengerRecordDao.Properties.ClientId.columnName,
-                "TEXT");
+        OutgoingVehicleRecordDao.dropTable(db, true);
+        OutgoingVehicleRecordDao.createTable(db, false);
     }
 }

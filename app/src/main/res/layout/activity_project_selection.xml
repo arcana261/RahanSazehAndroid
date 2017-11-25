@@ -89,13 +89,15 @@
                 android:layout_column="1"
                 android:layout_weight="3">
 
-                <Button
-                    android:id="@+id/btnSelectLine"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="onSelectLineClicked"
-                    android:text="@string/choose" />
+                <android.support.v7.widget.AppCompatAutoCompleteTextView
+                            android:id="@+id/txtProjectLineSelection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:completionThreshold="1"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:hint="شماره خط" />
+
             </RelativeLayout>
         </TableRow>
 

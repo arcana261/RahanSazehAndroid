@@ -9,11 +9,15 @@ import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.TableRow;
 import android.widget.Toast;
 
+import com.example.arcana.rahansazeh.adapters.LineSelectionAdapter;
 import com.example.arcana.rahansazeh.model.Project;
 import com.example.arcana.rahansazeh.model.ProjectDao;
 import com.example.arcana.rahansazeh.model.ProjectLine;
@@ -36,11 +40,12 @@ import ir.hamsaa.persiandatepicker.util.PersianCalendar;
 public class ProjectSelectionActivity extends BaseActivity {
     private Button btnSelectProject;
     private Button btnSelectDate;
-    private Button btnSelectLine;
     private Button btnSelectTerminal;
     private Button btnNext;
     private TableRow rowTerminalContainer;
     private TableRow rowProjectLineContainer;
+    private AppCompatAutoCompleteTextView txtProjectLineSelection;
+    private LineSelectionAdapter lineSelectionAdapter;
 
     private String userName;
     private Project selectedProject;
@@ -59,9 +64,11 @@ public class ProjectSelectionActivity extends BaseActivity {
         protected AsyncTaskResult<List<ServiceProject>> doInBackground(Void... voids) {
             try {
                 ProjectListService service = services().createProjectList();
-                return new AsyncTaskResult<>(service.getProjects(userName));
-            }
-            catch (Exception err) {
+                List<ServiceProject> result = service.getProjects(userName);
+                update(result);
+
+                return new AsyncTaskResult<>(result);
+            } catch (Exception err) {
                 return new AsyncTaskResult<>(err);
             }
         }
@@ -79,88 +86,103 @@ public class ProjectSelectionActivity extends BaseActivity {
             progressDialog.setCanceledOnTouchOutside(false);
         }
 
+        private long createSortCriteria(String title) {
+            long result = 0;
+
+            for (int i = 0; i < title.length(); i++) {
+                char ch = title.charAt(i);
+
+                if (Character.isDigit(ch)) {
+                    result = (result * 10l) + Long.parseLong(title.substring(i, i + 1));
+                }
+            }
+
+            return result;
+        }
+
+        private void update(final List<ServiceProject> result) {
+            ProjectDao projectDao = getDaoSession().getProjectDao();
+            ProjectLineDao projectLineDao = getDaoSession().getProjectLineDao();
+
+            Collection<Project> removeList = Queriable.create(projectDao.queryBuilder().list())
+                    .filter(new Predicate<Project>() {
+                        @Override
+                        public boolean predict(final Project project) {
+                            return !Queriable.create(result)
+                                    .exists(new Predicate<ServiceProject>() {
+                                        @Override
+                                        public boolean predict(ServiceProject serviceProject) {
+                                            return project.getExternalId().equals(
+                                                    serviceProject.getId());
+                                        }
+                                    }).execute();
+                        }
+                    }).execute();
+
+            for (Project toRemove : removeList) {
+                projectDao.delete(toRemove);
+            }
+
+            for (final ServiceProject serviceProject : result) {
+                Project project;
+
+                List<Project> projects = projectDao.queryBuilder()
+                        .where(ProjectDao.Properties.ExternalId.eq(serviceProject.getId()))
+                        .offset(0)
+                        .limit(1)
+                        .list();
+
+                if (projects.size() > 0) {
+                    project = projects.get(0);
+                    project.setTitle(serviceProject.getTitle());
+                    projectDao.update(project);
+                } else {
+                    project = new Project(null, serviceProject.getTitle(),
+                            serviceProject.getId());
+                    projectDao.insert(project);
+                }
+
+                List<ProjectLine> existingProjectLines = project.getProjectLines();
+
+                for (final ServiceProjectLine serviceProjectLine : serviceProject.getLines()) {
+                    ProjectLine projectLine = Queriable.create(existingProjectLines)
+                            .filter(new Predicate<ProjectLine>() {
+                                @Override
+                                public boolean predict(ProjectLine projectLine) {
+                                    return projectLine.getExternalId().equals(
+                                            serviceProjectLine.getId());
+                                }
+                            }).firstOrNull().execute();
+
+                    if (projectLine == null) {
+                        projectLine = new ProjectLine(
+                                null,
+                                serviceProjectLine.getTitle(),
+                                null,
+                                serviceProjectLine.getHead(),
+                                serviceProjectLine.getTail(),
+                                serviceProjectLine.getId(),
+                                createSortCriteria(serviceProjectLine.getTitle()));
+                        projectLine.setProject(project);
+                        projectLineDao.insert(projectLine);
+                    } else {
+                        projectLine.setHead(serviceProjectLine.getHead());
+                        projectLine.setTail(serviceProjectLine.getTail());
+                        projectLine.setTitle(serviceProjectLine.getTitle());
+                        projectLine.setSortCriteria(createSortCriteria(
+                                serviceProjectLine.getTitle()));
+                        projectLineDao.save(projectLine);
+                    }
+                }
+            }
+        }
+
         @Override
         protected void onPostExecute(final AsyncTaskResult<List<ServiceProject>> result) {
             progressDialog.cancel();
 
             if (result.getError() != null) {
                 showErrorDialog(getString(R.string.connection_error));
-            }
-            else {
-                ProjectDao projectDao = getDaoSession().getProjectDao();
-                ProjectLineDao projectLineDao = getDaoSession().getProjectLineDao();
-
-
-                Collection<Project> removeList = Queriable.create(projectDao.queryBuilder().list())
-                        .filter(new Predicate<Project>() {
-                            @Override
-                            public boolean predict(final Project project) {
-                                return !Queriable.create(result.getResult())
-                                        .exists(new Predicate<ServiceProject>() {
-                                            @Override
-                                            public boolean predict(ServiceProject serviceProject) {
-                                                return project.getExternalId().equals(
-                                                        serviceProject.getId());
-                                            }
-                                        }).execute();
-                            }
-                        }).execute();
-
-                for (Project toRemove : removeList) {
-                    projectDao.delete(toRemove);
-                }
-
-                for (final ServiceProject serviceProject : result.getResult()) {
-                    Project project;
-
-                    List<Project> projects = projectDao.queryBuilder()
-                            .where(ProjectDao.Properties.ExternalId.eq(serviceProject.getId()))
-                            .offset(0)
-                            .limit(1)
-                            .list();
-
-                    if (projects.size() > 0) {
-                        project = projects.get(0);
-                        project.setTitle(serviceProject.getTitle());
-                        projectDao.update(project);
-                    }
-                    else {
-                        project = new Project(null, serviceProject.getTitle(),
-                                serviceProject.getId());
-                        projectDao.insert(project);
-                    }
-
-                    List<ProjectLine> existingProjectLines = project.getProjectLines();
-
-                    for (final ServiceProjectLine serviceProjectLine : serviceProject.getLines()) {
-                        ProjectLine projectLine = Queriable.create(existingProjectLines)
-                                .filter(new Predicate<ProjectLine>() {
-                                    @Override
-                                    public boolean predict(ProjectLine projectLine) {
-                                        return projectLine.getExternalId().equals(
-                                                serviceProjectLine.getId());
-                                    }
-                                }).firstOrNull().execute();
-
-                        if (projectLine == null) {
-                            projectLine = new ProjectLine(
-                                    null,
-                                    serviceProjectLine.getTitle(),
-                                    null,
-                                    serviceProjectLine.getHead(),
-                                    serviceProjectLine.getTail(),
-                                    serviceProjectLine.getId());
-                            projectLine.setProject(project);
-                            projectLineDao.insert(projectLine);
-                        }
-                        else {
-                            projectLine.setHead(serviceProjectLine.getHead());
-                            projectLine.setTail(serviceProjectLine.getTail());
-                            projectLine.setTitle(serviceProjectLine.getTitle());
-                            projectLineDao.save(projectLine);
-                        }
-                    }
-                }
             }
         }
     }
@@ -175,11 +197,35 @@ public class ProjectSelectionActivity extends BaseActivity {
 
         btnSelectProject = findViewById(R.id.btnSelectProject);
         btnSelectDate = findViewById(R.id.btnSelectDate);
-        btnSelectLine = findViewById(R.id.btnSelectLine);
         btnSelectTerminal = findViewById(R.id.btnSelectTerminal);
         btnNext = findViewById(R.id.btnNext);
         rowTerminalContainer = findViewById(R.id.rowTerminalContainer);
         rowProjectLineContainer = findViewById(R.id.rowProjectLineContainer);
+        txtProjectLineSelection = findViewById(R.id.txtProjectLineSelection);
+
+        lineSelectionAdapter = null;
+
+        txtProjectLineSelection.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedLine = lineSelectionAdapter.getProjectLineById(id);
+                txtProjectLineSelection.setText(selectedLine.getTitle());
+
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+                if (imm != null) {
+                    if (view.getWindowToken() != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+
+                    if (view.getApplicationWindowToken() != null) {
+                        imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+                    }
+                }
+
+                recheck();
+            }
+        });
 
         userName = null;
         selectedProject = null;
@@ -270,7 +316,7 @@ public class ProjectSelectionActivity extends BaseActivity {
     }
 
     @Override
-    public void onSaveInstanceState (Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putString("userName", userName);
@@ -306,10 +352,6 @@ public class ProjectSelectionActivity extends BaseActivity {
             btnSelectDate.setText(date);
         }
 
-        if (hasLine) {
-            btnSelectLine.setText(selectedLine.getTitle());
-        }
-
         if (hasTerminal && hasLine) {
             btnSelectTerminal.setText(hasSelectedHead ?
                     selectedLine.getHead() : selectedLine.getTail());
@@ -334,6 +376,15 @@ public class ProjectSelectionActivity extends BaseActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         selectedProject = projects.get(which);
                         recheck();
+
+                        txtProjectLineSelection.setText("");
+                        selectedLine = null;
+
+                        lineSelectionAdapter = new LineSelectionAdapter(
+                                ProjectSelectionActivity.this,
+                                selectedProject, getDaoSession());
+
+                        txtProjectLineSelection.setAdapter(lineSelectionAdapter);
                     }
                 });
         AlertDialog dlg = builder.create();
@@ -371,31 +422,6 @@ public class ProjectSelectionActivity extends BaseActivity {
                 });
 
         picker.show();
-    }
-
-    public void onSelectLineClicked(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        selectedProject.resetProjectLines();
-        final List<ProjectLine> lines = selectedProject.getProjectLines();
-        final String[] titles = Queriable.create(lines)
-                .map(new Selector<ProjectLine, String>() {
-                    @Override
-                    public String select(ProjectLine projectLine) {
-                        return projectLine.getTitle();
-                    }
-                }).execute().toArray(new String[0]);
-
-        builder.setTitle("انتخاب کنید")
-                .setItems(titles, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        selectedLine = lines.get(which);
-                        recheck();
-                    }
-                });
-        AlertDialog dlg = builder.create();
-
-        dlg.show();
     }
 
     public void onSelectTerminalClicked(View view) {

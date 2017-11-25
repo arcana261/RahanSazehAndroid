@@ -11,6 +11,7 @@ import com.example.arcana.rahansazeh.migration.migrations.MigrationV15RemoveProj
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV16AddUpdateIdToVehicle;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV17AddSupportForVehicleUpdates;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV18AddIndexToVehicle;
+import com.example.arcana.rahansazeh.migration.migrations.MigrationV19AddSortCriteriaToProjectLine;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV1CreateUser;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV2CreateProjectAndProjectLine;
 import com.example.arcana.rahansazeh.migration.migrations.MigrationV3AddExternalIdToProjectAndProjectLine;
@@ -75,6 +76,7 @@ public class DatabaseUpgradeHelper extends DaoMaster.OpenHelper {
         migrations.add(new MigrationV16AddUpdateIdToVehicle());
         migrations.add(new MigrationV17AddSupportForVehicleUpdates());
         migrations.add(new MigrationV18AddIndexToVehicle());
+        migrations.add(new MigrationV19AddSortCriteriaToProjectLine());
 
         // Sorting just to be safe, in case other people add migrations in the wrong order.
         Comparator<Migration> migrationComparator = new Comparator<Migration>() {

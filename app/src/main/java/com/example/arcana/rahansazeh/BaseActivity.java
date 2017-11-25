@@ -24,7 +24,11 @@ public class BaseActivity extends AppCompatActivity {
 
     public BaseActivity() {
         this.backButtonEnabled = false;
-        this.serviceFactory = new RahanSazehServiceFactory();
+        this.serviceFactory = getServiceFactory();
+    }
+
+    public static ServiceFactory getServiceFactory() {
+        return new RahanSazehServiceFactory();
     }
 
     protected ServiceFactory services() {
